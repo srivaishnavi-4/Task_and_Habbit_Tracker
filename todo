@@ -1,0 +1,66 @@
+Ultimate Front-End PoC Challenge: Task & Habit Tracker + Analytics
+Goal
+
+Build a fully interactive task and habit tracker with analytics, custom rules, and smart UX-all in vanilla JS, HTML, and CSS.
+Advanced Requirements
+
+1. Task & Habit Management
+Tasks:
+Title, description, due date, priority
+Status: active / in-progress / stalled / completed
+Habits:
+Name, frequency (daily, weekly, custom)
+Habit streak tracker (visual progress bar or calendar)
+Optional: custom rules (e.g., only track habits on weekdays)
+
+
+2. Smart Sorting & Filtering
+Users can filter/sort tasks and habits by:
+Status
+Priority
+Due date
+Streaks (habits)
+Bonus: Multi-level filters (e.g., high-priority habits due today)
+
+
+3. Interactive Dashboard
+Display real-time statistics:
+Number of tasks completed today
+Tasks overdue
+Longest habit streak
+Weekly progress chart (bar or line chart, purely using CSS/JS)
+Dashboard updates live as users add/remove/update tasks and habits.
+
+
+4. Drag & Drop + Nesting
+Users can reorder tasks and habits via drag-and-drop.
+Tasks can have subtasks that can be reordered independently.
+Bonus: Collapsible subtask sections.
+
+
+5. Animations & Visual Feedback
+Smooth animations for:
+Adding/removing tasks or habits
+Completing tasks (e.g., fade out, strike-through)
+Dragging tasks (highlight drop target)
+Hover effects and tooltips for UI elements.
+
+
+6. Custom Rule Engine (Logic Layer)
+Users can define simple rules:
+Example: “If task priority = High and due date ≤ today → highlight in red”
+Example: “If habit streak ≥ 7 → show badge”
+This ensures they implement a dynamic evaluation system in JS.
+
+
+7. Persistence & Undo
+Save all tasks, habits, and dashboard data in localStorage.
+Bonus: Implement an undo/redo stack for the last 5 actions.
+
+
+8. Theme & Responsiveness
+Light/Dark mode toggle.
+Fully responsive layout for mobile and desktop.
+Bonus: Adaptive dashboard (collapse sections on small screens).
+
+Task & Habit Tracker POC -https://www.figma.com/design/7J6roluQ2t9ohTO4G7EUmi/Task---Habit-Tracker-POC?node-id=0-1&p=f Wireframes
