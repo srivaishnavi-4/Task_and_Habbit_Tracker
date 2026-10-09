@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Task & Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@200..800&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+<script src="app.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="brand">
+            <h1>Task & Habit Tracker</h1>
+            <p>Manage your tasks and build lasting habits with analytics and custom rules</p>
+        </div>
+        <button class="theme-button" id="themeButton" title="Toggle dark mode"></button>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav">
+        <button class="nav-button active" data-page="dashboard">
+            <span id="dashboardIcon"></span> Dashboard
+        </button>
+        <button class="nav-button" data-page="tasks">
+            <span id="tasksIcon"></span> Tasks
+        </button>
+        <button class="nav-button" data-page="habits">
+            <span id="habitsIcon"></span> Habits
+        </button>
+        <button class="nav-button" data-page="rules">
+            <span id="rulesIcon"></span> Rules
+        </button>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <main class="page active" id="dashboard">
+        <section class="stats">
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Completed tasks</div>
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-description">In total</div>
+                </div>
+                <span class="stat-icon green" id="completedIcon"></span>
+            </div>
+
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Overdue tasks</div>
+                    <div class="stat-value" id="overdueCount">0</div>
+                    <div class="stat-description">Total overdue</div>
+                </div>
+                <span class="stat-icon red" id="overdueIcon"></span>
+            </div>
+
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Active habits</div>
+                    <div class="stat-value" id="activeHabitCount">0</div>
+                    <div class="stat-description">Now active</div>
+                </div>
+                <span class="stat-icon blue" id="habitIcon"></span>
+            </div>
+
+            <div class="stat-card">
+                <div>
+                    <div class="stat-label">Longest Streak</div>
+                    <div class="stat-value" id="longestStreak">0</div>
+                    <div class="stat-description">All-time record</div>
+                </div>
+                <span class="stat-icon orange" id="streakIcon"></span>
+            </div>
+        </section>
+
+        <section class="chart-grid">
+            <!-- STATUS CHART -->
+            <div class="chart-card">
+                <div class="chart-title">Status Overview</div>
+                <div class="chart-subtitle">Get a snapshot of the status of your work items.</div>
+
+                <div class="donut-area">
+                    <div class="donut" id="donutChart" aria-label="Task status chart has no data yet">
+                        <span class="donut-empty-label">No data yet</span>
+                    </div>
+
+                    <div class="legend">
+                        <div class="legend-row">
+                            <span class="legend-dot gray"></span>
+                            Todo <span id="todoLegendCount">(0)</span>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot orange"></span>
+                            On hold <span id="holdLegendCount">(0)</span>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot blue"></span>
+                            In progress <span id="progressLegendCount">(0)</span>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot green"></span>
+                            Completed <span id="completeLegendCount">(0)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HABIT CHART -->
+            <div class="chart-card">
+                <div class="chart-title">Habit Completion Trend</div>
+                <div class="chart-subtitle">Track your daily habit completion over the past week.</div>
+
+                <div class="chart-plot">
+                    <div class="chart-y-title">Total habits</div>
+                    <div class="chart-y-ticks" aria-hidden="true">
+                        <span>4</span><span>3</span><span>2</span><span>1</span><span>0</span>
+                    </div>
+                    <div class="line-chart">
+                        <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+                            <line x1="40" y1="12"  x2="520" y2="12"  class="grid-line" />
+                            <line x1="40" y1="52"  x2="520" y2="52"  class="grid-line" />
+                            <line x1="40" y1="92"  x2="520" y2="92"  class="grid-line" />
+                            <line x1="40" y1="132" x2="520" y2="132" class="grid-line" />
+                            <line x1="40" y1="172" x2="520" y2="172" class="grid-line" />
+
+                            <line x1="40" y1="12" x2="40" y2="172" class="axis-line" />
+                            <line x1="40" y1="172" x2="520" y2="172" class="axis-line" />
+
+                            <line x1="40"  y1="12" x2="40"  y2="172" class="vertical-grid-line" />
+                            <line x1="120" y1="12" x2="120" y2="172" class="vertical-grid-line" />
+                            <line x1="200" y1="12" x2="200" y2="172" class="vertical-grid-line" />
+                            <line x1="280" y1="12" x2="280" y2="172" class="vertical-grid-line" />
+                            <line x1="360" y1="12" x2="360" y2="172" class="vertical-grid-line" />
+                            <line x1="440" y1="12" x2="440" y2="172" class="vertical-grid-line" />
+                            <line x1="520" y1="12" x2="520" y2="172" class="vertical-grid-line" />
+
+                            <polyline id="habitLine" class="chart-line" points="" />
+                        </svg>
+
+                        <div class="chart-tooltip" id="chartTooltip"></div>
+                        <div class="chart-empty-state">No activity yet</div>
+                    </div>
+
+                    <div class="chart-day-labels" aria-hidden="true">
+                        <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- TASK PAGE -->
+    <main class="page" id="tasks">
+        <section class="toolbar">
+            <div class="filters">
+                <div class="filter-label">
+                    <span id="filterIcon"></span> Filters:
+                </div>
+                <select class="select" id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="todo">Todo</option>
+                    <option value="in progress">In progress</option>
+                    <option value="on hold">On hold</option>
+                    <option value="completed">Completed</option>
+                </select>
+
+                <select class="select" id="priorityFilter">
+                    <option value="all">All Priority</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <div class="sort">
+                <span id="sortIcon"></span> Sort by:
+                <select class="select" id="sortSelect">
+                    <option value="created">Created at</option>
+                    <option value="due">Due date</option>
+                    <option value="priority">Priority</option>
+                    <option value="title">Title</option>
+                    <option value="manual">Manual order</option>
+                </select>
+            </div>
+        </section>
+
+        <section>
+            <div class="tasks-heading">
+                <h2>Tasks</h2>
+                <div class="task-actions">
+                    <label class="search">
+                        <span id="searchIcon"></span>
+                        <input id="searchInput" type="text" placeholder="Search">
+                    </label>
+                    <button class="add-button" id="addTaskButton">
+                        <span id="plusIcon"></span> Add task
+                    </button>
+                </div>
+            </div>
+
+            <div class="task-list" id="taskList"></div>
+        </section>
+    </main>
+
+    <!-- HABITS PAGE -->
+    <main class="page" id="habits">
+        <section class="habit-toolbar">
+            <div class="filters">
+                <span class="filter-label">Filters:</span>
+                <select class="select" id="habitFrequencyFilter" aria-label="Filter habits by frequency">
+                    <option value="all">All Frequency</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <label class="sort">
+                <span id="habitSortIcon"></span> Sort by:
+                <select class="select" id="habitSort" aria-label="Sort habits">
+                    <option value="streak">Streak</option>
+                    <option value="created">Created at</option>
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </label>
+        </section>
+
+        <div class="page-section-heading">
+            <h2>Habits</h2>
+            <div class="task-actions">
+                <label class="search">
+                    <span id="habitSearchIcon"></span>
+                    <input id="habitSearch" type="search" placeholder="Search" aria-label="Search habits">
+                </label>
+                <button class="add-button" id="addHabitButton"><span id="habitPlusIcon"></span>Add habit</button>
+            </div>
+        </div>
+
+        <div class="habit-list" id="habitList"></div>
+    </main>
+
+    <!-- RULES PAGE -->
+    <main class="page" id="rules">
+        <section class="habit-toolbar rules-toolbar">
+            <div class="filters">
+                <span class="filter-label">Filters:</span>
+                <select class="select" id="ruleStatusFilter" aria-label="Filter rules by status">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <select class="select" id="ruleSectionFilter" aria-label="Filter rules by section">
+                    <option value="all">All Sections</option>
+                    <option value="task">Task</option>
+                    <option value="habit">Habit</option>
+                </select>
+            </div>
+            <label class="sort">
+                <span id="ruleSortIcon"></span> Sort by:
+                <select class="select" id="ruleSort" aria-label="Sort rules">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </label>
+        </section>
+
+        <div class="page-section-heading">
+            <h2>Rules</h2>
+            <div class="task-actions">
+                <label class="search">
+                    <input id="ruleSearch" type="search" placeholder="Search" aria-label="Search rules">
+                </label>
+                <button class="add-button" id="addRuleButton"><span id="rulePlusIcon"></span>Add rule</button>
+            </div>
+        </div>
+
+        <div class="rules-list" id="rulesList"></div>
+    </main>
+
+</div>
+
+<!-- TASK MODAL -->
+<div class="overlay" id="taskModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title" id="modalTitle">Add task</div>
+                <div class="modal-subtitle">Add a new task with details, priority, and due date.</div>
+            </div>
+            <button class="close" id="closeModal">X</button>
+        </div>
+
+        <form id="taskForm">
+            <div class="form-group">
+                <label class="form-label">Task title <span class="required">*</span></label>
+                <input class="input" id="taskTitle">
+                <div class="error-message" id="titleError">Please fill this field</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="textarea" id="taskDescription"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Due date <span class="required">*</span></label>
+                <input class="input" id="taskDate" type="date">
+                <div class="error-message" id="dateError">Please fill this field</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Priority <span class="required">*</span></label>
+                <select class="form-select" id="taskPriority">
+                    <option value="">Select priority</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <div class="error-message" id="priorityError">Please fill this field</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="taskStatus">
+                    <option value="todo">Todo</option>
+                    <option value="in progress">In progress</option>
+                    <option value="on hold">On hold</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="cancel" id="cancelModal">Cancel</button>
+                <button type="submit" class="submit"><span id="submitText">Submit</span></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- HABIT EDITOR -->
+<div class="overlay" id="habitModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title" id="habitModalTitle">Add habit</div>
+                <div class="modal-subtitle">Create a habit to track your weekly progress.</div>
+            </div>
+            <button class="close" type="button" data-close-habit aria-label="Close">X</button>
+        </div>
+        <form id="habitForm" novalidate>
+            <div class="form-group">
+                <label class="form-label" for="habitName">Habit name <span class="required">*</span></label>
+                <input class="input" id="habitName" maxlength="80" placeholder="e.g. Morning workout">
+                <div class="error-message" id="habitNameError">Please fill this field</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="habitDescription">Description</label>
+                <textarea class="textarea" id="habitDescription" rows="3" placeholder="Add a short description"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="habitFrequency">Frequency <span class="required">*</span></label>
+                <select class="form-select" id="habitFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="form-group hidden" id="habitWeeklyDayGroup">
+                <label class="form-label" for="habitWeeklyDay">Choose a day</label>
+                <select class="form-select" id="habitWeeklyDay">
+                    <option value="Mon">Monday</option><option value="Tue">Tuesday</option><option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option><option value="Sat">Saturday</option><option value="Sun">Sunday</option>
+                </select>
+            </div>
+            <fieldset class="form-group day-picker hidden" id="habitDaysGroup">
+                <legend class="form-label">Choose days</legend>
+                <div class="weekday-options">
+                    <label><input type="checkbox" name="habitDay" value="Mon"> Monday</label>
+                    <label><input type="checkbox" name="habitDay" value="Tue"> Tuesday</label>
+                    <label><input type="checkbox" name="habitDay" value="Wed"> Wednesday</label>
+                    <label><input type="checkbox" name="habitDay" value="Thu"> Thursday</label>
+                    <label><input type="checkbox" name="habitDay" value="Fri"> Friday</label>
+                    <label><input type="checkbox" name="habitDay" value="Sat"> Saturday</label>
+                    <label><input type="checkbox" name="habitDay" value="Sun"> Sunday</label>
+                </div>
+            </fieldset>
+            <div class="modal-actions">
+                <button type="button" class="cancel" data-close-habit>Cancel</button>
+                <button type="submit" class="submit" id="saveHabitButton">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- RULE BUILDER -->
+<div class="overlay" id="ruleModal">
+    <div class="modal rule-modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title" id="ruleModalTitle">Add rule</div>
+                <div class="modal-subtitle">Choose what to watch and what should happen.</div>
+            </div>
+            <button class="close" type="button" data-close-rule aria-label="Close">X</button>
+        </div>
+        <form id="ruleForm" novalidate>
+            <div class="form-group">
+                <label class="form-label" for="ruleName">Rule name <span class="required">*</span></label>
+                <input class="input" id="ruleName" maxlength="80" placeholder="e.g. Urgent tasks alert">
+                <div class="error-message" id="ruleNameError">Please fill this field</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="ruleDescription">Description</label>
+                <textarea class="textarea" id="ruleDescription" rows="2" placeholder="Describe what this rule does"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="ruleTarget">Choose section</label>
+                <select class="form-select" id="ruleTarget"><option value="task">Task</option><option value="habit">Habit</option></select>
+            </div>
+            <section class="condition-builder">
+                <div class="builder-heading"><strong>Condition</strong><select class="form-select logic-select" id="ruleLogic" aria-label="Condition logic"><option value="AND">AND</option><option value="OR">OR</option></select></div>
+                <div id="ruleConditions"></div>
+                <button class="text-link" type="button" id="addConditionButton"><span id="addConditionIcon"></span>Add condition</button>
+            </section>
+            <div class="form-row rule-action-row">
+                <div class="form-group">
+                    <label class="form-label" for="ruleAction">Action</label>
+                    <select class="form-select" id="ruleAction"><option value="highlight">Highlight</option><option value="badge">Show badge</option></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ruleColor">Color</label>
+                    <select class="form-select" id="ruleColor"><option value="red">Red</option><option value="orange">Orange</option><option value="blue">Blue</option><option value="green">Green</option></select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cancel" data-close-rule>Cancel</button>
+                <button type="submit" class="submit" id="saveRuleButton">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="deleteModal">
+    <div class="modal delete-modal">
+        <div class="modal-header">
+            <div class="modal-title">Delete</div>
+            <button class="close" id="closeDelete">X</button>
+        </div>
+        <p id="deleteText">Are you sure you want to delete this item?</p>
+        <div class="delete-actions">
+            <button class="cancel" id="cancelDelete">Cancel</button>
+            <button class="delete-confirm" id="confirmDelete">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* =========================================
+   ICONS
+========================================= */
+const icons = {
+    dashboard: assetIcon("dashboard"),
+    tasks: assetIcon("task"),
+    habits: assetIcon("habits"),
+    rules: assetIcon("rules"),
+    check: assetIcon("completed"),
+    alert: assetIcon("important"),
+    target: assetIcon("habits_tracker"),
+    flame: assetIcon("streak"),
+    filter: assetIcon("filter"),
+    sort: assetIcon("sort"),
+    search: assetIcon("search"),
+    plus: assetIcon("add_task"),
+    calendar: assetIcon("calendar"),
+    edit: assetIcon("edit"),
+    trash: assetIcon("delete"),
+    addCondition: assetIcon("add_condition"),
+    moon: assetIcon("dark_theme"),
+    sun: assetIcon("light_theme"),
+    chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 6 6 6-6 6"/></svg>`,
+    grip: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="7" r="1.3"/><circle cx="16" cy="7" r="1.3"/><circle cx="8" cy="12" r="1.3"/><circle cx="16" cy="12" r="1.3"/><circle cx="8" cy="17" r="1.3"/><circle cx="16" cy="17" r="1.3"/></svg>`,
+    habit_page: assetIcon("habits_tracker"),
+    up:assetIcon("up"),
+    down:assetIcon("down")
+};
+
+function assetIcon(filename) {
+    return `<img class="asset-icon" src="./assests/${filename}.svg" alt="" aria-hidden="true">`;
+}
+
+dashboardIcon.innerHTML = icons.dashboard;
+tasksIcon.innerHTML = icons.tasks;
+habitsIcon.innerHTML = icons.habits;
+rulesIcon.innerHTML = icons.rules;
+completedIcon.innerHTML = icons.check;
+overdueIcon.innerHTML = icons.alert;
+habitIcon.innerHTML = icons.target;
+streakIcon.innerHTML = icons.flame;
+filterIcon.innerHTML = icons.filter;
+sortIcon.innerHTML = icons.sort;
+searchIcon.innerHTML = icons.search;
+plusIcon.innerHTML = icons.plus;
+
+/* =========================================
+   DATA LOAD & STORAGE
+========================================= */
+function loadData(key) {
+    try {
+        const savedData = localStorage.getItem(key);
+        return savedData ? JSON.parse(savedData) : [];
+    } catch (error) {
+        console.error(`Error loading ${key}:`, error);
+        return [];
+    }
+}
+
+let tasks = loadData("taskHabitTasks");
+let habits = loadData("taskHabitHabits");
+let rules = loadData("taskHabitRules");
+
+let editingId = null;
+let deletingTarget = null; // { type: 'task'|'habit'|'rule', id: id }
+let editingHabitId = null;
+let editingRuleId = null;
+
+function saveTasks() { localStorage.setItem("taskHabitTasks", JSON.stringify(tasks)); }
+function saveHabits() { localStorage.setItem("taskHabitHabits", JSON.stringify(habits)); }
+function saveRules() { localStorage.setItem("taskHabitRules", JSON.stringify(rules)); }
+
+function localDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function daysAgo(days) {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return localDateKey(date);
+}
+
+function lastSevenDays() {
+    return Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - index));
+        return {
+            key: localDateKey(date),
+            date: date.getDate(),
+            weekday: date.toLocaleDateString("en-US", { weekday: "short" })
+        };
+    });
+}
+
+function habitIsDue(habit, date = new Date()) {
+    const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
+    if (habit.frequency === "weekly") return weekday === (habit.weeklyDay || habit.days?.[0] || "Mon");
+    if (habit.frequency !== "custom") return true;
+    return (habit.days || []).includes(weekday);
+}
+
+function habitStreak(habit) {
+    const completed = new Set(habit.completedDates || []);
+    if (habit.frequency === "weekly") {
+        const currentWeek = new Date();
+        currentWeek.setHours(0, 0, 0, 0);
+        currentWeek.setDate(currentWeek.getDate() - ((currentWeek.getDay() + 6) % 7));
+        let streak = 0;
+        for (let index = 0; index < 520; index++) {
+            const start = new Date(currentWeek);
+            start.setDate(start.getDate() - index * 7);
+            const doneThisWeek = [...completed].some(key => {
+                const date = new Date(`${key}T00:00:00`);
+                return date >= start && date < new Date(start.getTime() + 7 * 86400000);
+            });
+            if (!doneThisWeek) {
+                if (index === 0) continue;
+                break;
+            }
+            streak++;
+        }
+        return streak;
+    }
+    let date = new Date();
+    date.setHours(0, 0, 0, 0);
+    if (!completed.has(localDateKey(date))) date.setDate(date.getDate() - 1);
+    let streak = 0;
+    for (let day = 0; day < 3660; day++) {
+        if (habitIsDue(habit, date)) {
+            if (!completed.has(localDateKey(date))) break;
+            streak++;
+        }
+        date.setDate(date.getDate() - 1);
+    }
+    return streak;
+}
+
+function ruleMatches(rule, item) {
+    const tests = (rule.conditions || []).map(condition => {
+        let actual = item[condition.field];
+        let expected = condition.value;
+        if (condition.field === "streak") actual = habitStreak(item);
+        if (condition.field === "completedToday") actual = (item.completedDates || []).includes(localDateKey());
+        if (condition.value === "today") expected = localDateKey();
+        if (condition.value === "yesterday") expected = daysAgo(1);
+        if (condition.field === "streak") expected = Number(expected);
+        switch (condition.operator) {
+            case "notEquals": return String(actual) !== String(expected);
+            case "lt": return condition.field === "streak" ? Number(actual) < Number(expected) : String(actual) < String(expected);
+            case "lte": return condition.field === "streak" ? Number(actual) <= Number(expected) : String(actual) <= String(expected);
+            case "gt": return condition.field === "streak" ? Number(actual) > Number(expected) : String(actual) > String(expected);
+            case "gte": return condition.field === "streak" ? Number(actual) >= Number(expected) : String(actual) >= String(expected);
+            case "contains": return String(actual).toLowerCase().includes(String(expected).toLowerCase());
+            default: return String(actual) === String(expected);
+        }
+    });
+    if (!tests.length) return false;
+    return rule.logic === "OR" ? tests.some(Boolean) : tests.every(Boolean);
+}
+
+function matchingRule(section, item, action) {
+    return rules.find(rule => rule.enabled && rule.section === section && rule.action === action && ruleMatches(rule, item));
+}
+
+/* =========================================
+   NAVIGATION & THEME
+========================================= */
+document.querySelectorAll(".nav-button").forEach(button => {
+    button.addEventListener("click", () => {
+        const page = button.dataset.page;
+        document.querySelectorAll(".nav-button").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".page").forEach(section => section.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(page).classList.add("active");
+    });
+});
+
+function updateThemeIcon() {
+    themeButton.innerHTML = document.body.classList.contains("dark") ? icons.sun : icons.moon;
+}
+updateThemeIcon();
+
+themeButton.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+    updateThemeIcon();
+});
+
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark");
+    updateThemeIcon();
+}
+
+/* =========================================
+   TASKS
+========================================= */
+function getFilteredTasks() {
+    const search = document.getElementById("searchInput").value.trim().toLowerCase();
+    const status = document.getElementById("statusFilter").value;
+    const priority = document.getElementById("priorityFilter").value;
+    const sort = document.getElementById("sortSelect").value;
+    const filtered = tasks.filter(task => {
+        const matchesSearch = (task.title || "").toLowerCase().includes(search) || (task.description || "").toLowerCase().includes(search);
+        return matchesSearch && (status === "all" || task.status === status) && (priority === "all" || task.priority === priority);
+    });
+    if (sort === "created") filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    else if (sort === "due") filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    else if (sort === "title") filtered.sort((a, b) => a.title.localeCompare(b.title));
+    else if (sort === "priority") {
+        const values = { high: 1, medium: 2, low: 3 };
+        filtered.sort((a, b) => values[a.priority] - values[b.priority]);
+    }
+    return filtered;
+}
+
+function renderTasks() {
+    const list = document.getElementById("taskList");
+    const filtered = getFilteredTasks();
+
+    if (!filtered.length) {
+        list.innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">${icons.tasks}</div>
+                <div class="empty-text">No tasks found. Create your first task to get started</div>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = filtered.map(createTaskHTML).join("");
+    attachTaskEvents();
+}
+
+function createTaskHTML(task, index) {
+    const highlightRule = matchingRule("task", task, "highlight");
+    const priorityText = task.priority ? (task.priority.charAt(0).toUpperCase() + task.priority.slice(1)) : "None";
+    const date = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-GB") : "No Date";
+    const moveUpDisabled = index === 0 ? "disabled" : "";
+    const moveDownDisabled = index === getFilteredTasks().length - 1 ? "disabled" : "";
+
+    return `
+        <article class="task-card ${highlightRule ? `rule-highlight-${highlightRule.color}` : ""}" draggable="true" data-id="${task.id}">
+            <div class="task-top">
+                <div class="drag-handle">${icons.grip}</div>
+                <div class="task-main">
+                    <div class="task-title">${escapeHTML(task.title)}</div>
+                    <div class="task-description">${escapeHTML(task.description || "")}</div>
+                    <div class="task-meta">
+                        <span class="badge ${task.priority}">${priorityText}</span>
+                        <span class="date">${icons.calendar} ${date}</span>
+                    </div>
+                </div>
+                <div class="task-controls">
+                    <button class="move-task move-task-up" title="Move up" aria-label="Move task up" ${moveUpDisabled}>${icons.up}</button>
+                    <button class="move-task move-task-down" title="Move down" aria-label="Move task down" ${moveDownDisabled}>${icons.down}</button>
+                    <button class="icon-button expand-task" title="Expand">${icons.chevron}</button>
+                    <button class="icon-button edit-task" title="Edit">${icons.edit}</button>
+                    <button class="icon-button delete delete-task" title="Delete">${icons.trash}</button>
+                </div>
+            </div>
+
+            <div class="status-row">
+                <span class="status-label">Status</span>
+                <select class="status-select inline-status" data-id="${task.id}">
+                    <option value="todo" ${task.status === "todo" ? "selected" : ""}>Todo</option>
+                    <option value="in progress" ${task.status === "in progress" ? "selected" : ""}>In progress</option>
+                    <option value="on hold" ${task.status === "on hold" ? "selected" : ""}>On hold</option>
+                    <option value="completed" ${task.status === "completed" ? "selected" : ""}>Completed</option>
+                </select>
+            </div>
+
+            <button class="subtasks-toggle">
+                ${icons.chevron} Subtasks (${(task.subtasks || []).length})
+            </button>
+
+            <div class="subtask-area">
+                <div class="subtask-input-row">
+                    <input class="subtask-input" placeholder="Add subtask">
+                    <button class="subtask-add">${icons.plus}</button>
+                </div>
+                <div class="subtask-list">
+                    ${(task.subtasks || []).map((sub, subIndex) => `
+                        <label class="subtask">
+                            <input type="checkbox" ${sub.completed ? "checked" : ""} data-subtask="${subIndex}">
+                            <span>${escapeHTML(sub.title)}</span>
+                        </label>
+                    `).join("")}
+                </div>
+            </div>
+        </article>`;
+}
+
+function attachTaskEvents() {
+    document.querySelectorAll(".expand-task").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            button.closest(".task-card").classList.toggle("expanded");
+        });
+    });
+
+    document.querySelectorAll(".edit-task").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const id = Number(button.closest(".task-card").dataset.id);
+            openEditModal(id);
+        });
+    });
+
+    document.querySelectorAll(".delete-task").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const id = Number(button.closest(".task-card").dataset.id);
+            openGenericDeleteModal('task', id);
+        });
+    });
+
+    document.querySelectorAll(".move-task").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const taskId = Number(button.closest(".task-card").dataset.id);
+            const direction = button.classList.contains("move-task-up") ? "up" : "down";
+            moveTask(taskId, direction);
+        });
+    });
+
+    document.querySelectorAll(".inline-status").forEach(select => {
+        select.addEventListener("change", () => {
+            const id = Number(select.dataset.id);
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.status = select.value;
+                saveTasks();
+                renderTasks();
+                updateDashboard();
+            }
+        });
+    });
+
+    document.querySelectorAll(".subtasks-toggle").forEach(button => {
+        button.addEventListener("click", () => button.closest(".task-card").classList.toggle("expanded"));
+    });
+
+    document.querySelectorAll(".subtask-add").forEach(button => {
+        button.addEventListener("click", () => {
+            const card = button.closest(".task-card");
+            const id = Number(card.dataset.id);
+            const input = card.querySelector(".subtask-input");
+            const value = input.value.trim();
+            if (!value) return;
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.subtasks = task.subtasks || [];
+                task.subtasks.push({ title: value, completed: false });
+                saveTasks();
+                renderTasks();
+                const newCard = document.querySelector(`.task-card[data-id="${id}"]`);
+                if (newCard) newCard.classList.add("expanded");
+            }
+        });
+    });
+
+    document.querySelectorAll(".subtask input").forEach(input => {
+        input.addEventListener("change", () => {
+            const card = input.closest(".task-card");
+            const id = Number(card.dataset.id);
+            const index = Number(input.dataset.subtask);
+            const task = tasks.find(t => t.id === id);
+            if (task && task.subtasks[index]) {
+                task.subtasks[index].completed = input.checked;
+                saveTasks();
+            }
+        });
+    });
+
+    enableDragDrop();
+}
+
+function moveTask(taskId, direction) {
+    const visible = getFilteredTasks();
+    const currentIndex = visible.findIndex(task => task.id === taskId);
+    if (currentIndex < 0) return;
+    const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (nextIndex < 0 || nextIndex >= visible.length) return;
+    
+    const visibleIds = visible.map(task => task.id);
+    const [movedId] = visibleIds.splice(currentIndex, 1);
+    visibleIds.splice(nextIndex, 0, movedId);
+
+    const visibleSet = new Set(visible.map(task => task.id));
+    const reorderedVisible = visibleIds.map(id => tasks.find(task => task.id === id));
+    let visibleIndex = 0;
+    tasks = tasks.map(task => visibleSet.has(task.id) ? reorderedVisible[visibleIndex++] : task);
+
+    const sortSelect = document.getElementById("sortSelect");
+    if (sortSelect) sortSelect.value = "manual";
+    saveTasks();
+    renderTasks();
+    updateDashboard();
+}
+
+function enableDragDrop() {
+    const cards = document.querySelectorAll(".task-card");
+    let draggedId = null;
+
+    cards.forEach(card => {
+        card.addEventListener("dragstart", e => {
+            draggedId = Number(card.dataset.id);
+            e.dataTransfer.effectAllowed = "move";
+            card.classList.add("dragging");
+        });
+
+        card.addEventListener("dragover", e => {
+            e.preventDefault();
+            if (Number(card.dataset.id) !== draggedId) {
+                card.classList.add("drag-over");
+            }
+        });
+
+        card.addEventListener("dragleave", () => card.classList.remove("drag-over"));
+
+        card.addEventListener("drop", e => {
+            e.preventDefault();
+            const targetId = Number(card.dataset.id);
+            if (!draggedId || draggedId === targetId) return;
+
+            const visible = getFilteredTasks();
+            const fromIndex = visible.findIndex(t => t.id === draggedId);
+            const toIndex = visible.findIndex(t => t.id === targetId);
+            if (fromIndex >= 0 && toIndex >= 0) {
+                const rect = card.getBoundingClientRect();
+                const insertAfter = e.clientY > rect.top + rect.height / 2;
+                const visibleIds = visible.map(t => t.id);
+                const [moved] = visibleIds.splice(fromIndex, 1);
+                let dest = visibleIds.indexOf(targetId);
+                if (insertAfter) dest++;
+                visibleIds.splice(dest, 0, moved);
+
+                const visibleSet = new Set(visible.map(task => task.id));
+                const reorderedVisible = visibleIds.map(id => tasks.find(task => task.id === id));
+                let idx = 0;
+                tasks = tasks.map(task => visibleSet.has(task.id) ? reorderedVisible[idx++] : task);
+
+                document.getElementById("sortSelect").value = "manual";
+                saveTasks();
+                renderTasks();
+                updateDashboard();
+            }
+        });
+
+        card.addEventListener("dragend", () => {
+            draggedId = null;
+            document.querySelectorAll(".task-card").forEach(c => c.classList.remove("dragging", "drag-over"));
+        });
+    });
+}
+
+/* =========================================
+   TASK MODAL
+========================================= */
+addTaskButton.addEventListener("click", () => openAddModal());
+
+function openAddModal() {
+    editingId = null;
+    modalTitle.textContent = "Add task";
+    submitText.textContent = "Submit";
+    taskForm.reset();
+    clearErrors();
+    taskModal.classList.add("show");
+    setTimeout(() => taskTitle.focus(), 50);
+}
+
+function openEditModal(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    editingId = id;
+    modalTitle.textContent = "Edit task";
+    submitText.textContent = "Save";
+    taskTitle.value = task.title;
+    taskDescription.value = task.description || "";
+    taskDate.value = task.dueDate || "";
+    taskPriority.value = task.priority || "";
+    taskStatus.value = task.status || "todo";
+    clearErrors();
+    taskModal.classList.add("show");
+}
+
+closeModal.addEventListener("click", closeTaskModal);
+cancelModal.addEventListener("click", closeTaskModal);
+taskModal.addEventListener("click", e => { if (e.target === taskModal) closeTaskModal(); });
+
+function closeTaskModal() {
+    taskModal.classList.remove("show");
+    editingId = null;
+}
+
+taskForm.addEventListener("submit", e => {
+    e.preventDefault();
+    clearErrors();
+    let valid = true;
+
+    if (!taskTitle.value.trim()) { showError(taskTitle, titleError); valid = false; }
+    if (!taskDate.value) { showError(taskDate, dateError); valid = false; }
+    if (!taskPriority.value) { showError(taskPriority, priorityError); valid = false; }
+
+    if (!valid) return;
+
+    if (editingId !== null) {
+        const task = tasks.find(t => t.id === editingId);
+        if (task) {
+            task.title = taskTitle.value.trim();
+            task.description = taskDescription.value.trim();
+            task.dueDate = taskDate.value;
+            task.priority = taskPriority.value;
+            task.status = taskStatus.value;
+            showToast("All set! Your changes have been saved successfully!");
+        }
+    } else {
+        tasks.push({
+            id: Date.now(),
+            title: taskTitle.value.trim(),
+            description: taskDescription.value.trim(),
+            dueDate: taskDate.value,
+            priority: taskPriority.value,
+            status: taskStatus.value,
+            subtasks: [],
+            createdAt: Date.now()
+        });
+        showToast(`Nice work! Your new task "${taskTitle.value.trim()}" is now in the list!`);
+    }
+
+    saveTasks();
+    closeTaskModal();
+    renderTasks();
+    updateDashboard();
+});
+
+function showError(input, error) {
+    if (input) input.classList.add("form-error");
+    if (error) error.classList.add("show");
+}
+
+function clearErrors() {
+    document.querySelectorAll(".form-error").forEach(el => el.classList.remove("form-error"));
+    document.querySelectorAll(".error-message").forEach(el => el.classList.remove("show"));
+}
+
+/* =========================================
+   GENERIC DELETE MODAL (Tasks, Habits, Rules)
+========================================= */
+function openGenericDeleteModal(type, id) {
+    deletingTarget = { type, id };
+    let name = "this item";
+    if (type === 'task') {
+        const task = tasks.find(t => t.id === id);
+        if (task) name = `the task "${task.title}"`;
+    } else if (type === 'habit') {
+        const habit = habits.find(h => String(h.id) === String(id));
+        if (habit) name = `the habit "${habit.name}"`;
+    } else if (type === 'rule') {
+        const rule = rules.find(r => String(r.id) === String(id));
+        if (rule) name = `the rule "${rule.name}"`;
+    }
+
+    deleteText.textContent = `Are you sure you want to delete ${name}?`;
+    deleteModal.classList.add("show");
+}
+
+function closeDeleteModal() {
+    deleteModal.classList.remove("show");
+    deletingTarget = null;
+}
+
+closeDelete.addEventListener("click", closeDeleteModal);
+cancelDelete.addEventListener("click", closeDeleteModal);
+
+confirmDelete.addEventListener("click", () => {
+    if (!deletingTarget) return;
+
+    if (deletingTarget.type === 'task') {
+        tasks = tasks.filter(t => t.id !== deletingTarget.id);
+        saveTasks();
+        renderTasks();
+    } else if (deletingTarget.type === 'habit') {
+        habits = habits.filter(h => String(h.id) !== String(deletingTarget.id));
+        saveHabits();
+        renderHabits();
+    } else if (deletingTarget.type === 'rule') {
+        rules = rules.filter(r => String(r.id) !== String(deletingTarget.id));
+        saveRules();
+        renderRules();
+    }
+
+    updateDashboard();
+    closeDeleteModal();
+    showToast("Done! Your item has been removed.");
+});
+
+searchInput.addEventListener("input", renderTasks);
+statusFilter.addEventListener("change", renderTasks);
+priorityFilter.addEventListener("change", renderTasks);
+sortSelect.addEventListener("change", renderTasks);
+
+/* =========================================
+   DASHBOARD
+========================================= */
+function updateDashboard() {
+    const completed = tasks.filter(t => t.status === "completed").length;
+    const todo = tasks.filter(t => t.status === "todo").length;
+    const progress = tasks.filter(t => t.status === "in progress").length;
+    const hold = tasks.filter(t => t.status === "on hold").length;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const overdue = tasks.filter(t => new Date(t.dueDate) < today && t.status !== "completed").length;
+
+    completedCount.textContent = completed;
+    overdueCount.textContent = overdue;
+    activeHabitCount.textContent = habits.length;
+    longestStreak.textContent = Math.max(0, ...habits.map(habitStreak));
+
+    document.getElementById("todoLegendCount").textContent = `- ${todo}`;
+    document.getElementById("holdLegendCount").textContent = `- ${hold}`;
+    document.getElementById("progressLegendCount").textContent = `- ${progress}`;
+    document.getElementById("completeLegendCount").textContent = `- ${completed}`;
+
+    updateDonut(todo, hold, progress, completed);
+    updateHabitTrend();
+}
+
+function updateDonut(todo, hold, progress, completed) {
+    const donut = document.getElementById("donutChart");
+    if (!donut) return;
+
+    const total = todo + hold + progress + completed;
+    const label = donut.querySelector(".donut-empty-label");
+
+    if (!total) {
+        donut.classList.add("empty-data");
+        donut.style.background = "";
+        donut.setAttribute("aria-label", "Task status chart has no data yet");
+        if (label) label.style.display = "grid";
+        donut.title = "No tasks available";
+        return;
+    }
+
+    donut.classList.remove("empty-data");
+    const segments = [
+        { name: "Todo", value: todo, color: "#aaa" },
+        { name: "On hold", value: hold, color: "#f2a900" },
+        { name: "In progress", value: progress, color: "#1d9bf0" },
+        { name: "Completed", value: completed, color: "#0fc68c" }
+    ];
+
+    let current = 0;
+    const gradientParts = segments.map(segment => {
+        if (!segment.value) return null;
+        const start = (current / total) * 100;
+        current += segment.value;
+        const end = (current / total) * 100;
+        return `${segment.color} ${start}% ${end}%`;
+    }).filter(Boolean);
+
+    donut.style.background = `conic-gradient(${gradientParts.join(", ")})`;
+    donut.setAttribute("aria-label", `Task status chart with ${total} tasks`);
+    if (label) label.style.display = "none";
+
+    const hoverDetails = segments
+        .map(s => `${s.name}: ${s.value} (${Math.round((s.value / total) * 100 || 0)}%)`)
+        .join("\n");
+    donut.title = `Total Tasks: ${total}\n${hoverDetails}`;
+}
+
+function updateHabitTrend() {
+    const line = document.getElementById("habitLine");
+    const emptyState = document.querySelector(".chart-empty-state");
+    if (!line) return;
+
+    const days = lastSevenDays();
+    const trend = days.map(day => habits.filter(habit => (habit.completedDates || []).includes(day.key)).length);
+    const maxValue = Math.max(1, ...trend, 4);
+    const svg = line.ownerSVGElement;
+    const labels = document.querySelector(".chart-day-labels");
+    if (labels) labels.innerHTML = days.map(day => `<span>${day.weekday}</span>`).join("");
+
+    if (!habits.length) {
+        line.setAttribute("points", "");
+        if (svg) svg.querySelectorAll(".chart-point-dynamic").forEach(point => point.remove());
+        if (emptyState) emptyState.style.display = "grid";
+        return;
+    }
+    if (emptyState) emptyState.style.display = "none";
+
+    const coordinates = trend.map((value, index) => ({
+        x: 40 + index * 80,
+        y: 172 - (value / maxValue) * 160,
+        value,
+        day: days[index]
+    }));
+    line.setAttribute("points", coordinates.map(point => `${point.x},${point.y}`).join(" "));
+
+    if (svg) {
+        svg.querySelectorAll(".chart-point-dynamic").forEach(point => point.remove());
+        coordinates.forEach(point => {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("class", "chart-point chart-point-dynamic");
+            circle.setAttribute("cx", point.x);
+            circle.setAttribute("cy", point.y);
+            circle.setAttribute("r", "4");
+            circle.setAttribute("fill", "var(--blue)");
+            circle.setAttribute("stroke", "var(--surface)");
+            circle.setAttribute("stroke-width", "1.5");
+            
+            const showTooltip = () => {
+                const tooltip = document.getElementById("chartTooltip");
+                const chart = circle.closest(".line-chart");
+                if (!tooltip || !chart) return;
+                tooltip.textContent = `${point.day.weekday}: ${point.value} completed`;
+                tooltip.style.left = `${(point.x / 600) * chart.clientWidth}px`;
+                tooltip.style.top = `${(point.y / 200) * chart.clientHeight - 4}px`;
+                tooltip.style.opacity = "1";
+            };
+
+            circle.addEventListener("mouseenter", showTooltip);
+            circle.addEventListener("mouseleave", () => {
+                const tooltip = document.getElementById("chartTooltip");
+                if (tooltip) tooltip.style.opacity = "0";
+            });
+            svg.appendChild(circle);
+        });
+    }
+}
+
+/* =========================================
+   HABITS VIEW
+========================================= */
+function habitFrequencyLabel(habit) {
+    if (habit.frequency === "custom") return `Custom · ${(habit.days || []).join(", ")}`;
+    if (habit.frequency === "weekly") return `Weekly · ${habit.weeklyDay || habit.days?.[0] || "Mon"}`;
+    return "Daily";
+}
+
+function renderHabits() {
+    const list = document.getElementById("habitList");
+    if (!list) return;
+    const frequency = document.getElementById("habitFrequencyFilter").value;
+    const search = document.getElementById("habitSearch").value.trim().toLowerCase();
+    const sort = document.getElementById("habitSort").value;
+
+    let visible = habits.filter(habit => {
+        const matchesFrequency = frequency === "all" || habit.frequency === frequency;
+        const matchesSearch = `${habit.name} ${habit.description || ""}`.toLowerCase().includes(search);
+        return matchesFrequency && matchesSearch;
+    });
+
+    if (sort === "streak") visible.sort((a, b) => habitStreak(b) - habitStreak(a));
+    if (sort === "created") visible.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    if (sort === "asc") visible.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "desc") visible.sort((a, b) => b.name.localeCompare(a.name));
+
+    list.innerHTML = visible.length ? visible.map(habit => {
+        const streak = habitStreak(habit);
+        const highlight = matchingRule("habit", { ...habit, streak }, "highlight");
+        const badge = matchingRule("habit", { ...habit, streak }, "badge");
+        const todayDone = (habit.completedDates || []).includes(localDateKey());
+        
+        const week = lastSevenDays().map(day => {
+            const done = (habit.completedDates || []).includes(day.key);
+            const due = habitIsDue(habit, new Date(`${day.key}T00:00:00`));
+            const missed = due && day.key < localDateKey() && !done && habit.frequency !== "weekly";
+            const disabled = day.key > localDateKey() || !due;
+            return `<button class="habit-day ${done ? "done" : ""} ${missed ? "missed" : ""} ${day.key === localDateKey() ? "today" : ""}" data-habit-day="${habit.id}" data-day="${day.key}" title="${day.weekday}, ${day.date}${due ? "" : " · Rest day"}" ${disabled ? "disabled" : ""}><strong>${day.date}</strong><small>${day.weekday}</small></button>`;
+        }).join("");
+
+        const colorClass = highlight ? `rule-highlight-${highlight.color}` : "";
+        return `
+            <article class="habit-entry ${colorClass}" data-habit-card="${habit.id}">
+                <div class="habit-entry-main">
+                    <div class="habit-entry-title-row">
+                        <div>
+                            <h3 class="habit-entry-title">${escapeHTML(habit.name)}</h3>
+                            <p class="habit-entry-description">${escapeHTML(habit.description || "")}</p>
+                        </div>
+                        <div class="habit-entry-actions">
+                            <span class="habit-frequency-tag">${escapeHTML(habitFrequencyLabel(habit))}</span>
+                            ${badge ? `<span class="rule-badge ${badge.color}">${escapeHTML(badge.name)}</span>` : ""}
+                            <button class="icon-button habit-edit" data-edit-habit="${habit.id}" title="Edit habit">${icons.edit}</button>
+                            <button class="icon-button delete habit-delete" data-delete-habit="${habit.id}" title="Delete habit">${icons.trash}</button>
+                        </div>
+                    </div>
+                    <div class="habit-entry-meta">
+                        <span>${habit.frequency === "weekly" ? "Weekly" : habit.frequency === "custom" ? "Custom" : "Daily"}</span>
+                        <span class="streak-chip">${streak} ${habit.frequency === "weekly" ? "week" : "day"} streak</span>
+                    </div>
+                    <div class="habit-week-label">Last 7 days</div>
+                    <div class="habit-week-grid">${week}</div>
+                </div>
+                <button class="habit-complete-button ${todayDone ? "completed" : ""}" data-complete-habit="${habit.id}" ${!habitIsDue(habit) ? 'disabled title="Not scheduled today"' : ""}>${todayDone ? "Completed" : "Mark complete"}</button>
+            </article>`;
+    }).join("") : `<div class="empty"><div class="empty-icon">${icons.habit_page}</div><div class="empty-text">No habits found. Add a habit to start a streak.</div></div>`;
+
+    list.querySelectorAll("[data-habit-day]").forEach(button => button.addEventListener("click", () => toggleHabitDate(button.dataset.habitDay, button.dataset.day)));
+    list.querySelectorAll("[data-complete-habit]").forEach(button => button.addEventListener("click", () => toggleHabitDate(button.dataset.completeHabit, localDateKey())));
+    list.querySelectorAll("[data-edit-habit]").forEach(button => button.addEventListener("click", () => openHabitEditor(button.dataset.editHabit)));
+    list.querySelectorAll("[data-delete-habit]").forEach(button => button.addEventListener("click", () => openGenericDeleteModal('habit', button.dataset.deleteHabit)));
+}
+
+function toggleHabitDate(id, day) {
+    const habit = habits.find(item => String(item.id) === String(id));
+    if (!habit || day > localDateKey()) return;
+    if (!habitIsDue(habit, new Date(`${day}T00:00:00`))) return;
+    habit.completedDates = habit.completedDates || [];
+    const index = habit.completedDates.indexOf(day);
+    if (index >= 0) habit.completedDates.splice(index, 1);
+    else habit.completedDates.push(day);
+    saveHabits();
+    renderHabits();
+    updateDashboard();
+}
+
+function openHabitEditor(id = null) {
+    editingHabitId = id;
+    const habit = id ? habits.find(item => String(item.id) === String(id)) : null;
+    document.getElementById("habitForm").reset();
+    clearErrors();
+    document.getElementById("habitModalTitle").textContent = habit ? "Edit habit" : "Add habit";
+    document.getElementById("saveHabitButton").textContent = habit ? "Save" : "Submit";
+    document.getElementById("habitName").value = habit?.name || "";
+    document.getElementById("habitDescription").value = habit?.description || "";
+    document.getElementById("habitFrequency").value = habit?.frequency || "daily";
+    document.getElementById("habitWeeklyDay").value = habit?.weeklyDay || habit?.days?.[0] || "Mon";
+    document.querySelectorAll("[name=habitDay]").forEach(input => input.checked = Boolean(habit?.days?.includes(input.value)));
+    document.getElementById("habitWeeklyDayGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "weekly");
+    document.getElementById("habitDaysGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "custom");
+    document.getElementById("habitModal").classList.add("show");
+}
+
+function closeHabitEditor() {
+    document.getElementById("habitModal").classList.remove("show");
+    editingHabitId = null;
+    clearErrors();
+}
+
+/* =========================================
+   RULES VIEW
+========================================= */
+function conditionFieldOptions(section) {
+    return section === "task"
+        ? [["priority", "Priority"], ["status", "Status"], ["dueDate", "Due Date"]]
+        : [["frequency", "Frequency"], ["streak", "Streak"], ["completedToday", "Completed today"]];
+}
+
+function conditionValueControl(section, field, value) {
+    let choices = [];
+    if (field === "priority") choices = [["high", "High"], ["medium", "Medium"], ["low", "Low"]];
+    if (field === "status") choices = [["todo", "Todo"], ["in progress", "In progress"], ["on hold", "On hold"], ["completed", "Completed"]];
+    if (field === "frequency") choices = [["daily", "Daily"], ["weekly", "Weekly"], ["custom", "Custom"]];
+    if (field === "dueDate") choices = [["today", "Today"], ["yesterday", "Yesterday"]];
+    if (field === "completedToday") choices = [["true", "Yes"], ["false", "No"]];
+    if (field === "streak") return `<input class="form-input condition-value" type="number" min="0" value="${escapeHTML(value ?? "7")}" aria-label="Condition value">`;
+    return `<select class="form-select condition-value" aria-label="Condition value">${choices.map(([key, label]) => `<option value="${key}" ${String(value ?? choices[0]?.[0]) === key ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
+function renderConditionRows(conditions = []) {
+    const target = document.getElementById("ruleTarget").value;
+    const defaults = conditions.length ? conditions : [{ field: target === "task" ? "priority" : "frequency", operator: "equals", value: target === "task" ? "high" : "daily" }];
+    document.getElementById("ruleConditions").innerHTML = defaults.map((condition, index) => `
+        <div class="condition-row" data-condition-index="${index}">
+            <select class="form-select condition-field" aria-label="Condition field">${conditionFieldOptions(target).map(([key, label]) => `<option value="${key}" ${condition.field === key ? "selected" : ""}>${label}</option>`).join("")}</select>
+            <select class="form-select condition-operator" aria-label="Condition operator">
+                <option value="equals" ${condition.operator === "equals" ? "selected" : ""}>Equals to</option>
+                <option value="notEquals" ${condition.operator === "notEquals" ? "selected" : ""}>Does not equal</option>
+                <option value="lt" ${condition.operator === "lt" ? "selected" : ""}>Less than</option>
+                <option value="lte" ${condition.operator === "lte" ? "selected" : ""}>Less than or equal</option>
+                <option value="gt" ${condition.operator === "gt" ? "selected" : ""}>Greater than</option>
+                <option value="gte" ${condition.operator === "gte" ? "selected" : ""}>Greater than or equal</option>
+            </select>
+            <span class="condition-value-wrap">${conditionValueControl(target, condition.field, condition.value)}</span>
+            <button class="remove-condition" type="button" data-remove-condition="${index}" title="Remove condition">X</button>
+        </div>`).join("");
+
+    document.querySelectorAll(".condition-field").forEach(select => select.addEventListener("change", () => {
+        const saved = readRuleConditions();
+        const index = Number(select.closest(".condition-row").dataset.conditionIndex);
+        saved[index] = { ...saved[index], field: select.value, value: undefined };
+        renderConditionRows(saved);
+    }));
+    document.querySelectorAll("[data-remove-condition]").forEach(button => button.addEventListener("click", () => {
+        const saved = readRuleConditions();
+        saved.splice(Number(button.dataset.removeCondition), 1);
+        renderConditionRows(saved);
+    }));
+}
+
+function readRuleConditions() {
+    return [...document.querySelectorAll(".condition-row")].map(row => ({
+        field: row.querySelector(".condition-field").value,
+        operator: row.querySelector(".condition-operator").value,
+        value: row.querySelector(".condition-value").value
+    }));
+}
+
+function ruleSummary(rule) {
+    const names = Object.fromEntries(conditionFieldOptions(rule.section).map(([key, label]) => [key, label]));
+    const parts = (rule.conditions || []).map(condition => `${names[condition.field] || condition.field} ${condition.operator} ${condition.value}`);
+    return `${rule.section === "task" ? "Task" : "Habit"} · ${parts.join(` ${rule.logic || "AND"} `)} · ${rule.action === "badge" ? "Show badge" : "Highlight"} ${rule.color}`;
+}
+
+function renderRules() {
+    const list = document.getElementById("rulesList");
+    if (!list) return;
+    const status = document.getElementById("ruleStatusFilter").value;
+    const section = document.getElementById("ruleSectionFilter").value;
+    const search = document.getElementById("ruleSearch").value.trim().toLowerCase();
+    const sort = document.getElementById("ruleSort").value;
+
+    let visible = rules.filter(rule => (status === "all" || (status === "active") === rule.enabled) && (section === "all" || rule.section === section) && `${rule.name} ${rule.description}`.toLowerCase().includes(search));
+    visible.sort((a, b) => sort === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+
+    list.innerHTML = visible.length ? visible.map(rule => `
+        <article class="rule-row">
+            <div class="rule-row-content">
+                <div class="rule-name-line"><h3>${escapeHTML(rule.name)}</h3><span class="rule-section-tag ${rule.section}">${rule.section === "task" ? "Task" : "Habit"}</span></div>
+                <p>${escapeHTML(rule.description || ruleSummary(rule))}</p>
+                <small>${escapeHTML(ruleSummary(rule))}</small>
+            </div>
+            <div class="rule-row-actions">
+                <button class="icon-button rule-edit" data-edit-rule="${rule.id}" title="Edit rule">${icons.edit}</button>
+                <button class="icon-button delete rule-delete" data-delete-rule="${rule.id}" title="Delete rule">${icons.trash}</button>
+                <label class="switch" title="${rule.enabled ? "Disable" : "Enable"} rule"><input type="checkbox" data-toggle-rule="${rule.id}" ${rule.enabled ? "checked" : ""}><span></span></label>
+            </div>
+        </article>`).join("") : `<div class="empty"><div class="empty-icon">${icons.rules}</div><div class="empty-text">No rules found. Add a rule to automate task or habit feedback.</div></div>`;
+
+    list.querySelectorAll("[data-edit-rule]").forEach(button => button.addEventListener("click", () => openRuleEditor(button.dataset.editRule)));
+    list.querySelectorAll("[data-delete-rule]").forEach(button => button.addEventListener("click", () => openGenericDeleteModal('rule', button.dataset.deleteRule)));
+    list.querySelectorAll("[data-toggle-rule]").forEach(input => input.addEventListener("change", () => {
+        const rule = rules.find(item => String(item.id) === String(input.dataset.toggleRule));
+        if (rule) rule.enabled = input.checked;
+        saveRules();
+        renderRules();
+        renderTasks();
+        renderHabits();
+    }));
+}
+
+function openRuleEditor(id = null) {
+    editingRuleId = id;
+    const rule = id ? rules.find(item => String(item.id) === String(id)) : null;
+    document.getElementById("ruleForm").reset();
+    clearErrors();
+    document.getElementById("ruleModalTitle").textContent = rule ? "Edit rule" : "Add rule";
+    document.getElementById("saveRuleButton").textContent = rule ? "Save" : "Submit";
+    document.getElementById("ruleName").value = rule?.name || "";
+    document.getElementById("ruleDescription").value = rule?.description || "";
+    document.getElementById("ruleTarget").value = rule?.section || "task";
+    document.getElementById("ruleLogic").value = rule?.logic || "AND";
+    document.getElementById("ruleAction").value = rule?.action || "highlight";
+    document.getElementById("ruleColor").value = rule?.color || "red";
+    renderConditionRows(rule?.conditions || []);
+    document.getElementById("ruleModal").classList.add("show");
+}
+
+function closeRuleEditor() {
+    document.getElementById("ruleModal").classList.remove("show");
+    editingRuleId = null;
+    clearErrors();
+}
+
+/* =========================================
+   TOAST & UTILITIES
+========================================= */
+function showToast(message, error = false) {
+    const toast = document.createElement("div");
+    toast.className = "toast" + (error ? " error" : "");
+    toast.innerHTML = `
+        <div class="toast-icon">${error ? icons.alert : icons.check}</div>
+        <div class="toast-content">${escapeHTML(message)}</div>
+        <button class="toast-close">X</button>`;
+
+    toastContainer.appendChild(toast);
+    toast.querySelector(".toast-close").addEventListener("click", () => toast.remove());
+    setTimeout(() => toast.remove(), 4000);
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+/* =========================================
+   INITIALIZATION & FORM VALIDATION HANDLERS
+========================================= */
+document.getElementById("habitSortIcon").innerHTML = icons.sort;
+document.getElementById("ruleSortIcon").innerHTML = icons.sort;
+document.getElementById("habitSearchIcon").innerHTML = icons.search;
+document.getElementById("habitPlusIcon").innerHTML = icons.plus;
+document.getElementById("rulePlusIcon").innerHTML = icons.plus;
+document.getElementById("addConditionIcon").innerHTML = icons.addCondition;
+
+document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => {
+    if (button.dataset.page === "habits") renderHabits();
+    if (button.dataset.page === "rules") renderRules();
+}));
+
+document.getElementById("habitFrequencyFilter").addEventListener("change", renderHabits);
+document.getElementById("habitSort").addEventListener("change", renderHabits);
+document.getElementById("habitSearch").addEventListener("input", renderHabits);
+document.getElementById("addHabitButton").addEventListener("click", () => openHabitEditor());
+document.getElementById("habitFrequency").addEventListener("change", event => {
+    document.getElementById("habitWeeklyDayGroup").classList.toggle("hidden", event.target.value !== "weekly");
+    document.getElementById("habitDaysGroup").classList.toggle("hidden", event.target.value !== "custom");
+});
+document.querySelectorAll("[data-close-habit]").forEach(button => button.addEventListener("click", closeHabitEditor));
+document.getElementById("habitModal").addEventListener("click", event => {
+    if (event.target === document.getElementById("habitModal")) closeHabitEditor();
+});
+
+// HABIT FORM SUBMISSION & RED BORDER VALIDATION
+document.getElementById("habitForm").addEventListener("submit", event => {
+    event.preventDefault();
+    clearErrors();
+    let valid = true;
+
+    const habitNameInput = document.getElementById("habitName");
+    if (!habitNameInput.value.trim()) {
+        showError(habitNameInput, document.getElementById("habitNameError"));
+        valid = false;
+    }
+
+    const frequency = document.getElementById("habitFrequency").value;
+    const days = [...document.querySelectorAll("[name=habitDay]:checked")].map(input => input.value);
+    if (frequency === "custom" && !days.length) {
+        showToast("Choose at least one day for a custom habit.", true);
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    const formData = {
+        name: habitNameInput.value.trim(),
+        description: document.getElementById("habitDescription").value.trim(),
+        frequency,
+        days: frequency === "custom" ? days : [],
+        weeklyDay: frequency === "weekly" ? document.getElementById("habitWeeklyDay").value : null
+    };
+
+    const wasEditing = editingHabitId !== null;
+    if (wasEditing) {
+        Object.assign(habits.find(item => String(item.id) === String(editingHabitId)), formData);
+    } else {
+        habits.push({ id: Date.now(), ...formData, completedDates: [], createdAt: Date.now() });
+    }
+
+    saveHabits();
+    closeHabitEditor();
+    renderHabits();
+    updateDashboard();
+    showToast(wasEditing ? "All set! Your habit has been updated." : "Nice work! Your new habit is ready.");
+});
+
+document.getElementById("ruleStatusFilter").addEventListener("change", renderRules);
+document.getElementById("ruleSectionFilter").addEventListener("change", renderRules);
+document.getElementById("ruleSort").addEventListener("change", renderRules);
+document.getElementById("ruleSearch").addEventListener("input", renderRules);
+document.getElementById("addRuleButton").addEventListener("click", () => openRuleEditor());
+document.querySelectorAll("[data-close-rule]").forEach(button => button.addEventListener("click", closeRuleEditor));
+document.getElementById("ruleModal").addEventListener("click", event => {
+    if (event.target === document.getElementById("ruleModal")) closeRuleEditor();
+});
+document.getElementById("ruleTarget").addEventListener("change", () => renderConditionRows());
+document.getElementById("addConditionButton").addEventListener("click", () => {
+    const current = readRuleConditions();
+    const target = document.getElementById("ruleTarget").value;
+    current.push({ field: target === "task" ? "status" : "streak", operator: target === "task" ? "equals" : "gte", value: target === "task" ? "todo" : "7" });
+    renderConditionRows(current);
+});
+
+// RULE FORM SUBMISSION & RED BORDER VALIDATION
+document.getElementById("ruleForm").addEventListener("submit", event => {
+    event.preventDefault();
+    clearErrors();
+    let valid = true;
+
+    const ruleNameInput = document.getElementById("ruleName");
+    if (!ruleNameInput.value.trim()) {
+        showError(ruleNameInput, document.getElementById("ruleNameError"));
+        valid = false;
+    }
+
+    const section = document.getElementById("ruleTarget").value;
+    const conditions = readRuleConditions();
+    if (!conditions.length) {
+        showToast("Add at least one rule condition.", true);
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    const ruleData = {
+        name: ruleNameInput.value.trim(),
+        description: document.getElementById("ruleDescription").value.trim(),
+        section,
+        logic: document.getElementById("ruleLogic").value,
+        conditions,
+        action: document.getElementById("ruleAction").value,
+        color: document.getElementById("ruleColor").value,
+        enabled: true
+    };
+
+    if (editingRuleId !== null) {
+        const rule = rules.find(item => String(item.id) === String(editingRuleId));
+        if (rule) Object.assign(rule, ruleData);
+    } else {
+        rules.push({ id: Date.now(), ...ruleData, createdAt: Date.now() });
+    }
+
+    saveRules();
+    closeRuleEditor();
+    renderRules();
+    renderTasks();
+    renderHabits();
+    showToast("All set! Your rule has been saved successfully.");
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeHabitEditor();
+        closeRuleEditor();
+        closeTaskModal();
+        closeDeleteModal();
+    }
+});
+
+// INITIAL RENDERS
+renderTasks();
+updateDashboard();
+renderHabits();
+renderRules();
+</script>
+
+</body>
+</html>
