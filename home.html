@@ -8,8 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@200..800&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-<script src="app.js"></script>
 <link rel="stylesheet" href="styles.css">
+<style>
+    /* Robust internal scrolling overrides */
+    body.modal-open { overflow: hidden; }
+    .overlay { overflow-y: auto; }
+    .modal { max-height: 85vh; overflow-y: auto; }
+    #ruleConditions { max-height: 200px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; }
+    .subtask-list { max-height: 150px; overflow-y: auto; padding-right: 4px; }
+</style>
 </head>
 
 <body>
@@ -28,16 +35,16 @@
     <!-- NAVIGATION -->
     <nav class="nav">
         <button class="nav-button active" data-page="dashboard">
-            <span id="dashboardIcon"></span> Dashboard
+            <img class="asset-icon" src="./Assests/dashboard.svg" alt="Dashboard"> Dashboard
         </button>
         <button class="nav-button" data-page="tasks">
-            <span id="tasksIcon"></span> Tasks
+            <img class="asset-icon" src="./Assests/task.svg" alt="Tasks"> Tasks
         </button>
         <button class="nav-button" data-page="habits">
-            <span id="habitsIcon"></span> Habits
+            <img class="asset-icon" src="./Assests/habits.svg" alt="Habits"> Habits
         </button>
         <button class="nav-button" data-page="rules">
-            <span id="rulesIcon"></span> Rules
+            <img class="asset-icon" src="./Assests/rules.svg" alt="Rules"> Rules
         </button>
     </nav>
 
@@ -83,34 +90,33 @@
 
         <section class="chart-grid">
             <!-- STATUS CHART -->
-            <div class="chart-card">
+            <div class="chart-card" style="position: relative;">
                 <div class="chart-title">Status Overview</div>
                 <div class="chart-subtitle">Get a snapshot of the status of your work items.</div>
 
                 <div class="donut-area">
-                    <div class="donut" id="donutChart" aria-label="Task status chart has no data yet">
-                        <span class="donut-empty-label">No data yet</span>
-                    </div>
+                    <canvas id="donutCanvas" width="220" height="220" style="width: 220px; height: 220px; display: block;"></canvas>
 
                     <div class="legend">
                         <div class="legend-row">
                             <span class="legend-dot gray"></span>
-                            Todo <span id="todoLegendCount">(0)</span>
+                            Todo <span id="todoLegendCount">0</span>
                         </div>
                         <div class="legend-row">
                             <span class="legend-dot orange"></span>
-                            On hold <span id="holdLegendCount">(0)</span>
+                            On hold <span id="holdLegendCount">0</span>
                         </div>
                         <div class="legend-row">
                             <span class="legend-dot blue"></span>
-                            In progress <span id="progressLegendCount">(0)</span>
+                            In progress <span id="progressLegendCount">0</span>
                         </div>
                         <div class="legend-row">
                             <span class="legend-dot green"></span>
-                            Completed <span id="completeLegendCount">(0)</span>
+                            Completed <span id="completeLegendCount">0</span>
                         </div>
                     </div>
                 </div>
+                <div class="chart-tooltip" id="donutTooltip"></div>
             </div>
 
             <!-- HABIT CHART -->
@@ -118,40 +124,10 @@
                 <div class="chart-title">Habit Completion Trend</div>
                 <div class="chart-subtitle">Track your daily habit completion over the past week.</div>
 
-                <div class="chart-plot">
-                    <div class="chart-y-title">Total habits</div>
-                    <div class="chart-y-ticks" aria-hidden="true">
-                        <span>4</span><span>3</span><span>2</span><span>1</span><span>0</span>
-                    </div>
-                    <div class="line-chart">
-                        <svg viewBox="0 0 600 200" preserveAspectRatio="none">
-                            <line x1="40" y1="12"  x2="520" y2="12"  class="grid-line" />
-                            <line x1="40" y1="52"  x2="520" y2="52"  class="grid-line" />
-                            <line x1="40" y1="92"  x2="520" y2="92"  class="grid-line" />
-                            <line x1="40" y1="132" x2="520" y2="132" class="grid-line" />
-                            <line x1="40" y1="172" x2="520" y2="172" class="grid-line" />
-
-                            <line x1="40" y1="12" x2="40" y2="172" class="axis-line" />
-                            <line x1="40" y1="172" x2="520" y2="172" class="axis-line" />
-
-                            <line x1="40"  y1="12" x2="40"  y2="172" class="vertical-grid-line" />
-                            <line x1="120" y1="12" x2="120" y2="172" class="vertical-grid-line" />
-                            <line x1="200" y1="12" x2="200" y2="172" class="vertical-grid-line" />
-                            <line x1="280" y1="12" x2="280" y2="172" class="vertical-grid-line" />
-                            <line x1="360" y1="12" x2="360" y2="172" class="vertical-grid-line" />
-                            <line x1="440" y1="12" x2="440" y2="172" class="vertical-grid-line" />
-                            <line x1="520" y1="12" x2="520" y2="172" class="vertical-grid-line" />
-
-                            <polyline id="habitLine" class="chart-line" points="" />
-                        </svg>
-
-                        <div class="chart-tooltip" id="chartTooltip"></div>
-                        <div class="chart-empty-state">No activity yet</div>
-                    </div>
-
-                    <div class="chart-day-labels" aria-hidden="true">
-                        <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
-                    </div>
+                <div class="line-chart" style="width: 100%; height: 300px; position: relative; margin-top: 20px;">
+                    <canvas id="habitCanvas" width="640" height="260" style="width: 100%; height: 100%; display: block;"></canvas>
+                    <div class="chart-tooltip" id="chartTooltip"></div>
+                    <div class="chart-empty-state" id="chartEmptyState" style="display:none; position:absolute; inset:0; place-items:center; color:var(--muted);">No activity yet</div>
                 </div>
             </div>
         </section>
@@ -214,7 +190,10 @@
     <main class="page" id="habits">
         <section class="habit-toolbar">
             <div class="filters">
-                <span class="filter-label">Filters:</span>
+                <span class="filter-label"><svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.3291 26.6586C13.329 26.9063 13.3979 27.1491 13.5281 27.3598C13.6583 27.5706 13.8446 27.7408 14.0662 27.8516L16.732 29.1845C16.9353 29.286 17.1612 29.334 17.3882 29.3237C17.6152 29.3134 17.8358 29.2453 18.029 29.1257C18.2223 29.0062 18.3818 28.8393 18.4923 28.6407C18.6029 28.4422 18.6609 28.2187 18.6608 27.9915V18.6611C18.6611 18.0005 18.9067 17.3635 19.3499 16.8737L28.9775 6.22499C29.1501 6.0338 29.2636 5.79671 29.3042 5.54239C29.3449 5.28806 29.311 5.02741 29.2067 4.79194C29.1023 4.55647 28.932 4.35628 28.7163 4.21556C28.5006 4.07484 28.2487 3.99963 27.9912 3.99902H3.9987C3.74092 3.99912 3.4887 4.07395 3.27259 4.21447C3.05648 4.35499 2.88575 4.55516 2.78108 4.79073C2.67642 5.0263 2.6423 5.28716 2.68287 5.54173C2.72345 5.79629 2.83696 6.03363 3.00967 6.22499L12.64 16.8737C13.0832 17.3635 13.3288 18.0005 13.3291 18.6611V26.6586Z" stroke-width="1.33235" stroke-linecap="round" stroke-linejoin="round" stroke="#717182"/>
+</svg>
+Filters:</span>
                 <select class="select" id="habitFrequencyFilter" aria-label="Filter habits by frequency">
                     <option value="all">All Frequency</option>
                     <option value="daily">Daily</option>
@@ -251,7 +230,11 @@
     <main class="page" id="rules">
         <section class="habit-toolbar rules-toolbar">
             <div class="filters">
-                <span class="filter-label">Filters:</span>
+                <span class="filter-label">
+                    <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.3291 26.6586C13.329 26.9063 13.3979 27.1491 13.5281 27.3598C13.6583 27.5706 13.8446 27.7408 14.0662 27.8516L16.732 29.1845C16.9353 29.286 17.1612 29.334 17.3882 29.3237C17.6152 29.3134 17.8358 29.2453 18.029 29.1257C18.2223 29.0062 18.3818 28.8393 18.4923 28.6407C18.6029 28.4422 18.6609 28.2187 18.6608 27.9915V18.6611C18.6611 18.0005 18.9067 17.3635 19.3499 16.8737L28.9775 6.22499C29.1501 6.0338 29.2636 5.79671 29.3042 5.54239C29.3449 5.28806 29.311 5.02741 29.2067 4.79194C29.1023 4.55647 28.932 4.35628 28.7163 4.21556C28.5006 4.07484 28.2487 3.99963 27.9912 3.99902H3.9987C3.74092 3.99912 3.4887 4.07395 3.27259 4.21447C3.05648 4.35499 2.88575 4.55516 2.78108 4.79073C2.67642 5.0263 2.6423 5.28716 2.68287 5.54173C2.72345 5.79629 2.83696 6.03363 3.00967 6.22499L12.64 16.8737C13.0832 17.3635 13.3288 18.0005 13.3291 18.6611V26.6586Z" stroke-width="1.33235" stroke-linecap="round" stroke-linejoin="round" stroke="#717182"/>
+</svg>
+Filters:</span>
                 <select class="select" id="ruleStatusFilter" aria-label="Filter rules by status">
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -276,6 +259,10 @@
             <h2>Rules</h2>
             <div class="task-actions">
                 <label class="search">
+                    <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28.7067 27.2931L23.5854 22.1718C25.5268 19.866 26.5027 16.8994 26.3094 13.8913C26.116 10.8832 24.7684 8.06596 22.5477 6.02764C20.3271 3.98932 17.405 2.88741 14.3913 2.9519C11.3777 3.01638 8.50542 4.24228 6.37397 6.37373C4.24253 8.50518 3.01663 11.3775 2.95214 14.3911C2.88766 17.4047 3.98957 20.3268 6.02788 22.5475C8.0662 24.7682 10.8834 26.1158 13.8915 26.3091C16.8996 26.5025 19.8662 25.5266 22.172 23.5851L27.2934 28.7065C27.4829 28.8831 27.7337 28.9793 27.9927 28.9747C28.2518 28.9701 28.499 28.8652 28.6822 28.682C28.8654 28.4987 28.9704 28.2516 28.9749 27.9925C28.9795 27.7334 28.8833 27.4827 28.7067 27.2931ZM5.00004 14.6665C5.00004 12.7546 5.56697 10.8856 6.62916 9.29595C7.69135 7.70627 9.20108 6.46727 10.9674 5.73562C12.7338 5.00397 14.6774 4.81254 16.5526 5.18553C18.4277 5.55852 20.1502 6.47918 21.5021 7.83109C22.854 9.183 23.7746 10.9054 24.1476 12.7806C24.5206 14.6557 24.3292 16.5994 23.5975 18.3657C22.8659 20.1321 21.6269 21.6418 20.0372 22.704C18.4475 23.7662 16.5786 24.3331 14.6667 24.3331C12.1038 24.3303 9.64669 23.3109 7.83445 21.4987C6.02221 19.6865 5.00286 17.2294 5.00004 14.6665Z" fill="#909090"/>
+</svg>
+
                     <input id="ruleSearch" type="search" placeholder="Search" aria-label="Search rules">
                 </label>
                 <button class="add-button" id="addRuleButton"><span id="rulePlusIcon"></span>Add rule</button>
@@ -299,42 +286,42 @@
         </div>
 
         <form id="taskForm">
-            <div class="form-group">
-                <label class="form-label">Task title <span class="required">*</span></label>
-                <input class="input" id="taskTitle">
+            <div class="floating-group">
+                <input class="floating-input" id="taskTitle" placeholder=" ">
+                <label class="floating-label" for="taskTitle">Task title <span class="required">*</span></label>
                 <div class="error-message" id="titleError">Please fill this field</div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Description</label>
-                <textarea class="textarea" id="taskDescription"></textarea>
+            <div class="floating-group">
+                <textarea class="floating-textarea" id="taskDescription" placeholder=" "></textarea>
+                <label class="floating-label" for="taskDescription">Description</label>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Due date <span class="required">*</span></label>
-                <input class="input" id="taskDate" type="date">
+            <div class="floating-group">
+                <input class="floating-input" id="taskDate" type="date" placeholder=" ">
+                <label class="floating-label" for="taskDate">Due date <span class="required">*</span></label>
                 <div class="error-message" id="dateError">Please fill this field</div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Priority <span class="required">*</span></label>
-                <select class="form-select" id="taskPriority">
-                    <option value="">Select priority</option>
+            <div class="floating-group">
+                <select class="floating-select" id="taskPriority" required>
+                    <option value="" disabled selected hidden></option>
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
                     <option value="low">Low</option>
                 </select>
+                <label class="floating-label" for="taskPriority">Priority <span class="required">*</span></label>
                 <div class="error-message" id="priorityError">Please fill this field</div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Status</label>
-                <select class="form-select" id="taskStatus">
+            <div class="floating-group">
+                <select class="floating-select" id="taskStatus" required>
                     <option value="todo">Todo</option>
                     <option value="in progress">In progress</option>
                     <option value="on hold">On hold</option>
                     <option value="completed">Completed</option>
                 </select>
+                <label class="floating-label" for="taskStatus">Status</label>
             </div>
 
             <div class="modal-actions">
@@ -356,29 +343,33 @@
             <button class="close" type="button" data-close-habit aria-label="Close">X</button>
         </div>
         <form id="habitForm" novalidate>
-            <div class="form-group">
-                <label class="form-label" for="habitName">Habit name <span class="required">*</span></label>
-                <input class="input" id="habitName" maxlength="80" placeholder="e.g. Morning workout">
+            <div class="floating-group">
+                <input class="floating-input" id="habitName" maxlength="80" placeholder=" ">
+                <label class="floating-label" for="habitName">Habit name <span class="required">*</span></label>
                 <div class="error-message" id="habitNameError">Please fill this field</div>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="habitDescription">Description</label>
-                <textarea class="textarea" id="habitDescription" rows="3" placeholder="Add a short description"></textarea>
+
+            <div class="floating-group">
+                <textarea class="floating-textarea" id="habitDescription" placeholder=" "></textarea>
+                <label class="floating-label" for="habitDescription">Description</label>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="habitFrequency">Frequency <span class="required">*</span></label>
-                <select class="form-select" id="habitFrequency">
+
+            <div class="floating-group">
+                <select class="floating-select" id="habitFrequency" required>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="custom">Custom</option>
                 </select>
+                <label class="floating-label" for="habitFrequency">Frequency <span class="required">*</span></label>
             </div>
-            <div class="form-group hidden" id="habitWeeklyDayGroup">
-                <label class="form-label" for="habitWeeklyDay">Choose a day</label>
-                <select class="form-select" id="habitWeeklyDay">
+
+            <div class="floating-group hidden" id="habitWeeklyDayGroup">
+                <select class="floating-select" id="habitWeeklyDay" required>
                     <option value="Mon">Monday</option><option value="Tue">Tuesday</option><option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option><option value="Sat">Saturday</option><option value="Sun">Sunday</option>
                 </select>
+                <label class="floating-label" for="habitWeeklyDay">Choose a day</label>
             </div>
+
             <fieldset class="form-group day-picker hidden" id="habitDaysGroup">
                 <legend class="form-label">Choose days</legend>
                 <div class="weekday-options">
@@ -391,6 +382,7 @@
                     <label><input type="checkbox" name="habitDay" value="Sun"> Sunday</label>
                 </div>
             </fieldset>
+
             <div class="modal-actions">
                 <button type="button" class="cancel" data-close-habit>Cancel</button>
                 <button type="submit" class="submit" id="saveHabitButton">Submit</button>
@@ -410,34 +402,50 @@
             <button class="close" type="button" data-close-rule aria-label="Close">X</button>
         </div>
         <form id="ruleForm" novalidate>
-            <div class="form-group">
-                <label class="form-label" for="ruleName">Rule name <span class="required">*</span></label>
-                <input class="input" id="ruleName" maxlength="80" placeholder="e.g. Urgent tasks alert">
+            <div class="floating-group">
+                <input class="floating-input" id="ruleName" maxlength="80" placeholder=" ">
+                <label class="floating-label" for="ruleName">Rule name <span class="required">*</span></label>
                 <div class="error-message" id="ruleNameError">Please fill this field</div>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="ruleDescription">Description</label>
-                <textarea class="textarea" id="ruleDescription" rows="2" placeholder="Describe what this rule does"></textarea>
+
+            <div class="floating-group">
+                <textarea class="floating-textarea" id="ruleDescription" placeholder=" "></textarea>
+                <label class="floating-label" for="ruleDescription">Description</label>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="ruleTarget">Choose section</label>
-                <select class="form-select" id="ruleTarget"><option value="task">Task</option><option value="habit">Habit</option></select>
+
+            <div class="floating-group">
+                <select class="floating-select" id="ruleTarget" required>
+                    <option value="task">Task</option>
+                    <option value="habit">Habit</option>
+                </select>
+                <label class="floating-label" for="ruleTarget">Choose section</label>
             </div>
+
             <section class="condition-builder">
                 <div class="builder-heading"><strong>Condition</strong><select class="form-select logic-select" id="ruleLogic" aria-label="Condition logic"><option value="AND">AND</option><option value="OR">OR</option></select></div>
                 <div id="ruleConditions"></div>
-                <button class="text-link" type="button" id="addConditionButton"><span id="addConditionIcon"></span>Add condition</button>
+                <button class="text-link" type="button" id="addConditionButton"><img class="asset-icon" src="./Assests/add_condition.svg" alt="Add"/>Add condition</button>
             </section>
-            <div class="form-row rule-action-row">
-                <div class="form-group">
-                    <label class="form-label" for="ruleAction">Action</label>
-                    <select class="form-select" id="ruleAction"><option value="highlight">Highlight</option><option value="badge">Show badge</option></select>
+
+            <div class="form-row rule-action-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="floating-group">
+                    <select class="floating-select" id="ruleAction" required>
+                        <option value="highlight">Highlight</option>
+                        <option value="badge">Show badge</option>
+                    </select>
+                    <label class="floating-label" for="ruleAction">Action</label>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="ruleColor">Color</label>
-                    <select class="form-select" id="ruleColor"><option value="red">Red</option><option value="orange">Orange</option><option value="blue">Blue</option><option value="green">Green</option></select>
+                <div class="floating-group">
+                    <select class="floating-select" id="ruleColor" required>
+                        <option value="red">Red</option>
+                        <option value="orange">Orange</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                    </select>
+                    <label class="floating-label" for="ruleColor">Color</label>
                 </div>
             </div>
+
             <div class="modal-actions">
                 <button type="button" class="cancel" data-close-rule>Cancel</button>
                 <button type="submit" class="submit" id="saveRuleButton">Submit</button>
@@ -461,10 +469,42 @@
     </div>
 </div>
 
+<!-- EDIT SUBTASK MODAL -->
+<div class="overlay" id="editSubtaskModal">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">Edit subtask</div>
+                <div class="modal-subtitle">Update your subtask title.</div>
+            </div>
+            <button class="close" id="closeEditSubtask">X</button>
+        </div>
+        <form id="editSubtaskForm">
+            <div class="floating-group">
+                <input class="floating-input" id="editSubtaskInput" placeholder=" " required>
+                <label class="floating-label" for="editSubtaskInput">Subtask title <span class="required">*</span></label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cancel" id="cancelEditSubtask">Cancel</button>
+                <button type="submit" class="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
+    function escapeHTML(value) {
+    if (!value) return "";
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 /* =========================================
    ICONS
 ========================================= */
@@ -484,24 +524,20 @@ const icons = {
     calendar: assetIcon("calendar"),
     edit: assetIcon("edit"),
     trash: assetIcon("delete"),
-    addCondition: assetIcon("add_condition"),
     moon: assetIcon("dark_theme"),
     sun: assetIcon("light_theme"),
     chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 6 6 6-6 6"/></svg>`,
     grip: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="7" r="1.3"/><circle cx="16" cy="7" r="1.3"/><circle cx="8" cy="12" r="1.3"/><circle cx="16" cy="12" r="1.3"/><circle cx="8" cy="17" r="1.3"/><circle cx="16" cy="17" r="1.3"/></svg>`,
-    habit_page: assetIcon("habits_tracker"),
-    up:assetIcon("up"),
-    down:assetIcon("down")
+    up: assetIcon("up"),
+    down: assetIcon("down"),
+    tick: assetIcon("tick"),
+    close: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`
 };
 
 function assetIcon(filename) {
-    return `<img class="asset-icon" src="./assests/${filename}.svg" alt="" aria-hidden="true">`;
+    return `<img class="asset-icon" src="./Assests/${filename}.svg" alt="" aria-hidden="true">`;
 }
 
-dashboardIcon.innerHTML = icons.dashboard;
-tasksIcon.innerHTML = icons.tasks;
-habitsIcon.innerHTML = icons.habits;
-rulesIcon.innerHTML = icons.rules;
 completedIcon.innerHTML = icons.check;
 overdueIcon.innerHTML = icons.alert;
 habitIcon.innerHTML = icons.target;
@@ -529,9 +565,10 @@ let habits = loadData("taskHabitHabits");
 let rules = loadData("taskHabitRules");
 
 let editingId = null;
-let deletingTarget = null; // { type: 'task'|'habit'|'rule', id: id }
+let deletingTarget = null;
 let editingHabitId = null;
 let editingRuleId = null;
+let editingSubtaskTarget = null;
 
 function saveTasks() { localStorage.setItem("taskHabitTasks", JSON.stringify(tasks)); }
 function saveHabits() { localStorage.setItem("taskHabitHabits", JSON.stringify(habits)); }
@@ -642,6 +679,8 @@ document.querySelectorAll(".nav-button").forEach(button => {
         document.querySelectorAll(".page").forEach(section => section.classList.remove("active"));
         button.classList.add("active");
         document.getElementById(page).classList.add("active");
+        if (page === "habits") renderHabits();
+        if (page === "rules") renderRules();
     });
 });
 
@@ -654,6 +693,7 @@ themeButton.addEventListener("click", () => {
     document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", document.body.classList.contains("dark"));
     updateThemeIcon();
+    updateDashboard();
 });
 
 if (localStorage.getItem("darkMode") === "true") {
@@ -690,7 +730,10 @@ function renderTasks() {
     if (!filtered.length) {
         list.innerHTML = `
             <div class="empty">
-                <div class="empty-icon">${icons.tasks}</div>
+                <div class="empty-icon"><svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.5 10.6248H41.825C41.8157 9.92109 41.6607 9.22698 41.3696 8.58626C41.0785 7.94555 40.6577 7.37215 40.1339 6.90229C39.61 6.43242 38.9943 6.0763 38.3258 5.85641C37.6573 5.63653 36.9505 5.55765 36.25 5.62476H23.75C23.0494 5.55765 22.3426 5.63653 21.6741 5.85641C21.0056 6.0763 20.39 6.43242 19.8661 6.90229C19.3422 7.37215 18.9214 7.94555 18.6303 8.58626C18.3393 9.22698 18.1842 9.92109 18.175 10.6248H17.5C16.2333 10.478 14.9499 10.6195 13.7456 11.0387C12.5414 11.4579 11.4475 12.144 10.5459 13.0457C9.64422 13.9473 8.95812 15.0412 8.53889 16.2454C8.11966 17.4497 7.97816 18.7331 8.12497 19.9998V44.9998C7.97816 46.2664 8.11966 47.5499 8.53889 48.7541C8.95812 49.9583 9.64422 51.0522 10.5459 51.9538C11.4475 52.8555 12.5414 53.5416 13.7456 53.9608C14.9499 54.3801 16.2333 54.5216 17.5 54.3748H42.5C43.7666 54.5216 45.0501 54.3801 46.2543 53.9608C47.4585 53.5416 48.5524 52.8555 49.4541 51.9538C50.3557 51.0522 51.0418 49.9583 51.461 48.7541C51.8803 47.5499 52.0218 46.2664 51.875 44.9998V19.9998C52.0218 18.7331 51.8803 17.4497 51.461 16.2454C51.0418 15.0412 50.3557 13.9473 49.4541 13.0457C48.5524 12.144 47.4585 11.4579 46.2543 11.0387C45.0501 10.6195 43.7666 10.478 42.5 10.6248ZM21.875 11.2498C21.875 9.77726 22.2775 9.37476 23.75 9.37476H36.25C37.7225 9.37476 38.125 9.77726 38.125 11.2498V13.7498C38.125 15.2223 37.7225 15.6248 36.25 15.6248H23.75C22.2775 15.6248 21.875 15.2223 21.875 13.7498V11.2498ZM48.125 44.9998C48.125 48.9423 46.4425 50.6248 42.5 50.6248H17.5C13.5575 50.6248 11.875 48.9423 11.875 44.9998V19.9998C11.875 16.0573 13.5575 14.3748 17.5 14.3748H18.175C18.1842 15.0784 18.3393 15.7725 18.6303 16.4133C18.9214 17.054 19.3422 17.6274 19.8661 18.0972C20.39 18.5671 21.0056 18.9232 21.6741 19.1431C22.3426 19.363 23.0494 19.4419 23.75 19.3748H36.25C36.9505 19.4419 37.6573 19.363 38.3258 19.1431C38.9943 18.9232 39.61 18.5671 40.1339 18.0972C40.6577 17.6274 41.0785 17.054 41.3696 16.4133C41.6607 15.7725 41.8157 15.0784 41.825 14.3748H42.5C46.4425 14.3748 48.125 16.0573 48.125 19.9998V44.9998ZM41.875 29.9998C41.875 30.497 41.6774 30.974 41.3258 31.3256C40.9742 31.6772 40.4972 31.8748 40 31.8748H27.5C27.0027 31.8748 26.5258 31.6772 26.1741 31.3256C25.8225 30.974 25.625 30.497 25.625 29.9998C25.625 29.5025 25.8225 29.0256 26.1741 28.6739C26.5258 28.3223 27.0027 28.1248 27.5 28.1248H40C40.4972 28.1248 40.9742 28.3223 41.3258 28.6739C41.6774 29.0256 41.875 29.5025 41.875 29.9998ZM41.875 39.9998C41.875 40.497 41.6774 40.9739 41.3258 41.3256C40.9742 41.6772 40.4972 41.8748 40 41.8748H27.5C27.0027 41.8748 26.5258 41.6772 26.1741 41.3256C25.8225 40.9739 25.625 40.497 25.625 39.9998C25.625 39.5025 25.8225 39.0256 26.1741 38.6739C26.5258 38.3223 27.0027 38.1248 27.5 38.1248H40C40.4972 38.1248 40.9742 38.3223 41.3258 38.6739C41.6774 39.0256 41.875 39.5025 41.875 39.9998ZM21.875 29.9998C21.875 30.3706 21.765 30.7331 21.559 31.0415C21.3529 31.3498 21.0601 31.5901 20.7175 31.732C20.3749 31.8739 19.9979 31.9111 19.6342 31.8387C19.2705 31.7664 18.9364 31.5878 18.6741 31.3256C18.4119 31.0634 18.2333 30.7293 18.161 30.3656C18.0886 30.0018 18.1258 29.6248 18.2677 29.2822C18.4096 28.9396 18.6499 28.6468 18.9583 28.4408C19.2666 28.2347 19.6291 28.1248 20 28.1248C20.4972 28.1248 20.9742 28.3223 21.3258 28.6739C21.6774 29.0256 21.875 29.5025 21.875 29.9998ZM21.875 39.9998C21.875 40.3706 21.765 40.7331 21.559 41.0415C21.3529 41.3498 21.0601 41.5901 20.7175 41.732C20.3749 41.8739 19.9979 41.9111 19.6342 41.8387C19.2705 41.7664 18.9364 41.5878 18.6741 41.3256C18.4119 41.0634 18.2333 40.7293 18.161 40.3656C18.0886 40.0018 18.1258 39.6248 18.2677 39.2822C18.4096 38.9396 18.6499 38.6468 18.9583 38.4408C19.2666 38.2347 19.6291 38.1248 20 38.1248C20.4972 38.1248 20.9742 38.3223 21.3258 38.6739C21.6774 39.0256 21.875 39.5025 21.875 39.9998Z" fill="#DDDDDD"/>
+</svg>
+</div>
                 <div class="empty-text">No tasks found. Create your first task to get started</div>
             </div>`;
         return;
@@ -715,14 +758,23 @@ function createTaskHTML(task, index) {
                     <div class="task-title">${escapeHTML(task.title)}</div>
                     <div class="task-description">${escapeHTML(task.description || "")}</div>
                     <div class="task-meta">
-                        <span class="badge ${task.priority}">${priorityText}</span>
-                        <span class="date">${icons.calendar} ${date}</span>
+                        <span class="badge ${task.priority}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_54_27916)">
+<path d="M2.66504 14.657V2.66453C2.66504 2.5611 2.68912 2.45909 2.73538 2.36658C2.78163 2.27406 2.84879 2.19359 2.93154 2.13153C3.62349 1.61257 4.4651 1.33203 5.33004 1.33203C7.32879 1.33203 8.66129 2.66453 10.2157 2.66453C11.104 2.66453 11.7851 2.48686 12.259 2.13153C12.358 2.05729 12.4757 2.01209 12.599 2.00097C12.7222 1.98986 12.8461 2.01328 12.9567 2.06862C13.0674 2.12395 13.1605 2.20901 13.2255 2.31426C13.2906 2.41951 13.325 2.5408 13.325 2.66453V9.32703C13.325 9.43046 13.301 9.53247 13.2547 9.62499C13.2084 9.7175 13.1413 9.79797 13.0585 9.86003C12.3666 10.379 11.525 10.6595 10.66 10.6595C8.66129 10.6595 7.32879 9.32703 5.33004 9.32703C4.34673 9.32706 3.39793 9.6895 2.66504 10.3451" stroke-width="0.998998" stroke-linecap="round" stroke-linejoin="round" stroke="white"/>
+</g>
+<defs>
+<clipPath id="clip0_54_27916">
+<rect width="15.99" height="15.99" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+  ${priorityText}</span>
+                        <span class="calendar"><img class="asset-icon" src="./Assests/calendar.svg" alt="">${date}</span>
                     </div>
                 </div>
                 <div class="task-controls">
                     <button class="move-task move-task-up" title="Move up" aria-label="Move task up" ${moveUpDisabled}>${icons.up}</button>
                     <button class="move-task move-task-down" title="Move down" aria-label="Move task down" ${moveDownDisabled}>${icons.down}</button>
-                    <button class="icon-button expand-task" title="Expand">${icons.chevron}</button>
                     <button class="icon-button edit-task" title="Edit">${icons.edit}</button>
                     <button class="icon-button delete delete-task" title="Delete">${icons.trash}</button>
                 </div>
@@ -745,14 +797,20 @@ function createTaskHTML(task, index) {
             <div class="subtask-area">
                 <div class="subtask-input-row">
                     <input class="subtask-input" placeholder="Add subtask">
-                    <button class="subtask-add">${icons.plus}</button>
+                    <button class="subtask-add" data-add-subtask="${task.id}">${icons.plus}</button>
                 </div>
                 <div class="subtask-list">
                     ${(task.subtasks || []).map((sub, subIndex) => `
-                        <label class="subtask">
-                            <input type="checkbox" ${sub.completed ? "checked" : ""} data-subtask="${subIndex}">
-                            <span>${escapeHTML(sub.title)}</span>
-                        </label>
+                        <div class="subtask-row" data-subtask-index="${subIndex}">
+                            <label class="subtask">
+                                <input type="checkbox" ${sub.completed ? "checked" : ""} data-toggle-subtask="${subIndex}">
+                                <span class="subtask-text">${escapeHTML(sub.title)}</span>
+                            </label>
+                            <div class="subtask-actions">
+                                <button class="icon-button subtask-edit" data-edit-subtask="${subIndex}" title="Edit subtask">${icons.edit}</button>
+                                <button class="icon-button delete subtask-delete" data-delete-subtask="${subIndex}" title="Delete subtask">${icons.trash}</button>
+                            </div>
+                        </div>
                     `).join("")}
                 </div>
             </div>
@@ -828,15 +886,42 @@ function attachTaskEvents() {
         });
     });
 
-    document.querySelectorAll(".subtask input").forEach(input => {
-        input.addEventListener("change", () => {
-            const card = input.closest(".task-card");
+    document.querySelectorAll("[data-toggle-subtask]").forEach(checkbox => {
+        checkbox.addEventListener("change", () => {
+            const card = checkbox.closest(".task-card");
             const id = Number(card.dataset.id);
-            const index = Number(input.dataset.subtask);
+            const index = Number(checkbox.dataset.toggleSubtask);
             const task = tasks.find(t => t.id === id);
             if (task && task.subtasks[index]) {
-                task.subtasks[index].completed = input.checked;
+                task.subtasks[index].completed = checkbox.checked;
                 saveTasks();
+            }
+        });
+    });
+
+    document.querySelectorAll(".subtask-edit").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const card = button.closest(".task-card");
+            const id = Number(card.dataset.id);
+            const index = Number(button.dataset.editSubtask);
+            openEditSubtaskModal(id, index);
+        });
+    });
+
+    document.querySelectorAll(".subtask-delete").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const card = button.closest(".task-card");
+            const id = Number(card.dataset.id);
+            const index = Number(button.dataset.deleteSubtask);
+            const task = tasks.find(t => t.id === id);
+            if (task && task.subtasks) {
+                task.subtasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+                const activeCard = document.querySelector(`.task-card[data-id="${id}"]`);
+                if (activeCard) activeCard.classList.add("expanded");
             }
         });
     });
@@ -935,6 +1020,7 @@ function openAddModal() {
     taskForm.reset();
     clearErrors();
     taskModal.classList.add("show");
+    document.body.classList.add("modal-open");
     setTimeout(() => taskTitle.focus(), 50);
 }
 
@@ -946,11 +1032,12 @@ function openEditModal(id) {
     submitText.textContent = "Save";
     taskTitle.value = task.title;
     taskDescription.value = task.description || "";
-    taskDate.value = task.dueDate || "";
+    taskDate.value = task.dueDate ? task.dueDate.split('T')[0] : "";
     taskPriority.value = task.priority || "";
     taskStatus.value = task.status || "todo";
     clearErrors();
     taskModal.classList.add("show");
+    document.body.classList.add("modal-open");
 }
 
 closeModal.addEventListener("click", closeTaskModal);
@@ -959,6 +1046,7 @@ taskModal.addEventListener("click", e => { if (e.target === taskModal) closeTask
 
 function closeTaskModal() {
     taskModal.classList.remove("show");
+    document.body.classList.remove("modal-open");
     editingId = null;
 }
 
@@ -973,12 +1061,14 @@ taskForm.addEventListener("submit", e => {
 
     if (!valid) return;
 
+    const utcDueDate = taskDate.value ? new Date(taskDate.value).toISOString() : "";
+
     if (editingId !== null) {
         const task = tasks.find(t => t.id === editingId);
         if (task) {
             task.title = taskTitle.value.trim();
             task.description = taskDescription.value.trim();
-            task.dueDate = taskDate.value;
+            task.dueDate = utcDueDate;
             task.priority = taskPriority.value;
             task.status = taskStatus.value;
             showToast("All set! Your changes have been saved successfully!");
@@ -988,7 +1078,7 @@ taskForm.addEventListener("submit", e => {
             id: Date.now(),
             title: taskTitle.value.trim(),
             description: taskDescription.value.trim(),
-            dueDate: taskDate.value,
+            dueDate: utcDueDate,
             priority: taskPriority.value,
             status: taskStatus.value,
             subtasks: [],
@@ -1014,7 +1104,55 @@ function clearErrors() {
 }
 
 /* =========================================
-   GENERIC DELETE MODAL (Tasks, Habits, Rules)
+   EDIT SUBTASK MODAL HANDLING
+========================================= */
+function openEditSubtaskModal(taskId, subIndex) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks[subIndex]) return;
+
+    editingSubtaskTarget = { taskId, subIndex };
+    const input = document.getElementById("editSubtaskInput");
+    input.value = task.subtasks[subIndex].title;
+
+    document.getElementById("editSubtaskModal").classList.add("show");
+    document.body.classList.add("modal-open");
+    setTimeout(() => input.focus(), 50);
+}
+
+function closeEditSubtaskModal() {
+    document.getElementById("editSubtaskModal").classList.remove("show");
+    document.body.classList.remove("modal-open");
+    editingSubtaskTarget = null;
+}
+
+document.getElementById("closeEditSubtask").addEventListener("click", closeEditSubtaskModal);
+document.getElementById("cancelEditSubtask").addEventListener("click", closeEditSubtaskModal);
+document.getElementById("editSubtaskModal").addEventListener("click", e => {
+    if (e.target === document.getElementById("editSubtaskModal")) closeEditSubtaskModal();
+});
+
+document.getElementById("editSubtaskForm").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!editingSubtaskTarget) return;
+
+    const { taskId, subIndex } = editingSubtaskTarget;
+    const task = tasks.find(t => t.id === taskId);
+    const newTitle = document.getElementById("editSubtaskInput").value.trim();
+
+    if (task && task.subtasks[subIndex] && newTitle) {
+        task.subtasks[subIndex].title = newTitle;
+        saveTasks();
+        renderTasks();
+        const activeCard = document.querySelector(`.task-card[data-id="${taskId}"]`);
+        if (activeCard) activeCard.classList.add("expanded");
+        showToast("Subtask updated successfully!");
+    }
+
+    closeEditSubtaskModal();
+});
+
+/* =========================================
+   GENERIC DELETE MODAL
 ========================================= */
 function openGenericDeleteModal(type, id) {
     deletingTarget = { type, id };
@@ -1032,10 +1170,12 @@ function openGenericDeleteModal(type, id) {
 
     deleteText.textContent = `Are you sure you want to delete ${name}?`;
     deleteModal.classList.add("show");
+    document.body.classList.add("modal-open");
 }
 
 function closeDeleteModal() {
     deleteModal.classList.remove("show");
+    document.body.classList.remove("modal-open");
     deletingTarget = null;
 }
 
@@ -1070,8 +1210,235 @@ priorityFilter.addEventListener("change", renderTasks);
 sortSelect.addEventListener("change", renderTasks);
 
 /* =========================================
-   DASHBOARD
+   CANVAS CHARTS RENDERING (Donut & Line)
 ========================================= */
+let donutSlices = [];
+
+function drawDonutChart(todo, hold, progress, completed) {
+    const canvas = document.getElementById("donutCanvas");
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const total = todo + hold + progress + completed;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 90;
+    const innerRadius = 55;
+
+    const isDark = document.body.classList.contains("dark");
+    const surfaceColor = isDark ? "#0f0f0f" : "#ffffff";
+    const emptyColor = isDark ? "#242424" : "#f0f1f3";
+
+    donutSlices = [];
+
+    if (!total) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = emptyColor;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = surfaceColor;
+        ctx.fill();
+
+        ctx.fillStyle = isDark ? "#9e9e9e" : "#787878";
+        ctx.font = "14px Quicksand, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("No data yet", centerX, centerY);
+        return;
+    }
+
+    const segments = [
+        { name: "Todo", value: todo, color: "#aaa" },
+        { name: "On hold", value: hold, color: "#f2a900" },
+        { name: "In progress", value: progress, color: "#1d9bf0" },
+        { name: "Completed", value: completed, color: "#0fc68c" }
+    ];
+
+    let startAngle = -Math.PI / 2;
+    segments.forEach(seg => {
+        if (!seg.value) return;
+        const sliceAngle = (seg.value / total) * (2 * Math.PI);
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+
+        donutSlices.push({
+            name: seg.name,
+            value: seg.value,
+            percentage: Math.round((seg.value / total) * 100),
+            startAngle,
+            endAngle
+        });
+
+        startAngle = endAngle;
+    });
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = surfaceColor;
+    ctx.fill();
+}
+
+const donutCanvas = document.getElementById("donutCanvas");
+if (donutCanvas) {
+    donutCanvas.onmousemove = e => {
+        const rect = donutCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left - donutCanvas.width / 2;
+        const y = e.clientY - rect.top - donutCanvas.height / 2;
+        
+        const distance = Math.sqrt(x * x + y * y);
+        const tooltip = document.getElementById("donutTooltip");
+
+        if (distance >= 55 && distance <= 90) {
+            let angle = Math.atan2(y, x);
+            if (angle < -Math.PI / 2) angle += 2 * Math.PI;
+
+            const activeSlice = donutSlices.find(slice => {
+                return angle >= slice.startAngle && angle <= slice.endAngle;
+            });
+
+            if (activeSlice && tooltip) {
+                const chartCard = donutCanvas.closest(".chart-card");
+                tooltip.textContent = `${activeSlice.name}\nCount: ${activeSlice.value} (${activeSlice.percentage}%)`;
+                tooltip.style.left = `${e.clientX - chartCard.getBoundingClientRect().left}px`;
+                tooltip.style.top = `${e.clientY - chartCard.getBoundingClientRect().top - 40}px`;
+                tooltip.style.opacity = "1";
+                return;
+            }
+        }
+        if (tooltip) tooltip.style.opacity = "0";
+    };
+
+    donutCanvas.onmouseleave = () => {
+        const tooltip = document.getElementById("donutTooltip");
+        if (tooltip) tooltip.style.opacity = "0";
+    };
+}
+
+function drawHabitChart(trendData, daysArray, maxValue) {
+    const canvas = document.getElementById('habitCanvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const isDark = document.body.classList.contains('dark');
+    const gridColor = isDark ? '#242424' : '#f0f1f3';
+    const axisColor = isDark ? '#555' : '#909090';
+    const textColor = isDark ? '#9e9e9e' : '#787878';
+    const lineColor = '#4b8cff';
+
+    const paddingLeft = 65;
+    const paddingRight = 40;
+    const paddingTop = 20;
+    const paddingBottom = 45;
+    
+    const chartWidth = canvas.width - paddingLeft - paddingRight;
+    const chartHeight = canvas.height - paddingTop - paddingBottom;
+
+    ctx.save();
+    ctx.translate(20, paddingTop + chartHeight / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = textColor;
+    ctx.font = "12px Quicksand, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Total habits", 0, 0);
+    ctx.restore();
+
+    const tickCount = 5;
+    ctx.lineWidth = 1;
+    ctx.font = "11px Quicksand, sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+
+    for (let i = 0; i < tickCount; i++) {
+        const val = Math.round((maxValue / (tickCount - 1)) * i);
+        const y = paddingTop + chartHeight - (chartHeight / (tickCount - 1)) * i;
+
+        ctx.strokeStyle = gridColor;
+        ctx.setLineDash(i === 0 ? [] : [2, 4]);
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(paddingLeft + chartWidth, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = textColor;
+        ctx.fillText(val, paddingLeft - 10, y);
+    }
+
+    const colWidth = chartWidth / (daysArray.length - 1);
+    
+    daysArray.forEach((day, index) => {
+        const x = paddingLeft + index * colWidth;
+
+        ctx.strokeStyle = gridColor;
+        ctx.setLineDash([2, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x, paddingTop);
+        ctx.lineTo(x, paddingTop + chartHeight);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = textColor;
+        ctx.font = "12px Quicksand, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(day.weekday, x, paddingTop + chartHeight + 12);
+    });
+
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, paddingTop);
+    ctx.lineTo(paddingLeft, paddingTop + chartHeight);
+    ctx.moveTo(paddingLeft, paddingTop + chartHeight);
+    ctx.lineTo(paddingLeft + chartWidth, paddingTop + chartHeight);
+    ctx.stroke();
+
+    if (trendData && trendData.length > 0) {
+        const points = trendData.map((val, index) => ({
+            x: paddingLeft + index * colWidth,
+            y: paddingTop + chartHeight - (val / maxValue) * chartHeight,
+            value: val,
+            day: daysArray[index]
+        }));
+
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        points.forEach((pt, i) => {
+            if (i === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.stroke();
+
+        const surfaceColor = isDark ? '#0f0f0f' : '#ffffff';
+        points.forEach(pt => {
+            ctx.fillStyle = lineColor;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = surfaceColor;
+            ctx.stroke();
+        });
+
+        return points;
+    }
+    return [];
+}
+
 function updateDashboard() {
     const completed = tasks.filter(t => t.status === "completed").length;
     const todo = tasks.filter(t => t.status === "todo").length;
@@ -1080,7 +1447,6 @@ function updateDashboard() {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const overdue = tasks.filter(t => new Date(t.dueDate) < today && t.status !== "completed").length;
 
     completedCount.textContent = completed;
@@ -1093,110 +1459,51 @@ function updateDashboard() {
     document.getElementById("progressLegendCount").textContent = `- ${progress}`;
     document.getElementById("completeLegendCount").textContent = `- ${completed}`;
 
-    updateDonut(todo, hold, progress, completed);
+    drawDonutChart(todo, hold, progress, completed);
     updateHabitTrend();
 }
 
-function updateDonut(todo, hold, progress, completed) {
-    const donut = document.getElementById("donutChart");
-    if (!donut) return;
-
-    const total = todo + hold + progress + completed;
-    const label = donut.querySelector(".donut-empty-label");
-
-    if (!total) {
-        donut.classList.add("empty-data");
-        donut.style.background = "";
-        donut.setAttribute("aria-label", "Task status chart has no data yet");
-        if (label) label.style.display = "grid";
-        donut.title = "No tasks available";
-        return;
-    }
-
-    donut.classList.remove("empty-data");
-    const segments = [
-        { name: "Todo", value: todo, color: "#aaa" },
-        { name: "On hold", value: hold, color: "#f2a900" },
-        { name: "In progress", value: progress, color: "#1d9bf0" },
-        { name: "Completed", value: completed, color: "#0fc68c" }
-    ];
-
-    let current = 0;
-    const gradientParts = segments.map(segment => {
-        if (!segment.value) return null;
-        const start = (current / total) * 100;
-        current += segment.value;
-        const end = (current / total) * 100;
-        return `${segment.color} ${start}% ${end}%`;
-    }).filter(Boolean);
-
-    donut.style.background = `conic-gradient(${gradientParts.join(", ")})`;
-    donut.setAttribute("aria-label", `Task status chart with ${total} tasks`);
-    if (label) label.style.display = "none";
-
-    const hoverDetails = segments
-        .map(s => `${s.name}: ${s.value} (${Math.round((s.value / total) * 100 || 0)}%)`)
-        .join("\n");
-    donut.title = `Total Tasks: ${total}\n${hoverDetails}`;
-}
-
 function updateHabitTrend() {
-    const line = document.getElementById("habitLine");
-    const emptyState = document.querySelector(".chart-empty-state");
-    if (!line) return;
-
+    const emptyState = document.getElementById("chartEmptyState");
     const days = lastSevenDays();
     const trend = days.map(day => habits.filter(habit => (habit.completedDates || []).includes(day.key)).length);
-    const maxValue = Math.max(1, ...trend, 4);
-    const svg = line.ownerSVGElement;
-    const labels = document.querySelector(".chart-day-labels");
-    if (labels) labels.innerHTML = days.map(day => `<span>${day.weekday}</span>`).join("");
+    
+    const dataMax = Math.max(0, ...trend);
+    const maxValue = Math.max(4, dataMax + 1);
 
     if (!habits.length) {
-        line.setAttribute("points", "");
-        if (svg) svg.querySelectorAll(".chart-point-dynamic").forEach(point => point.remove());
+        drawHabitChart([], days, maxValue);
         if (emptyState) emptyState.style.display = "grid";
         return;
     }
     if (emptyState) emptyState.style.display = "none";
 
-    const coordinates = trend.map((value, index) => ({
-        x: 40 + index * 80,
-        y: 172 - (value / maxValue) * 160,
-        value,
-        day: days[index]
-    }));
-    line.setAttribute("points", coordinates.map(point => `${point.x},${point.y}`).join(" "));
+    const points = drawHabitChart(trend, days, maxValue);
 
-    if (svg) {
-        svg.querySelectorAll(".chart-point-dynamic").forEach(point => point.remove());
-        coordinates.forEach(point => {
-            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            circle.setAttribute("class", "chart-point chart-point-dynamic");
-            circle.setAttribute("cx", point.x);
-            circle.setAttribute("cy", point.y);
-            circle.setAttribute("r", "4");
-            circle.setAttribute("fill", "var(--blue)");
-            circle.setAttribute("stroke", "var(--surface)");
-            circle.setAttribute("stroke-width", "1.5");
+    const canvas = document.getElementById("habitCanvas");
+    if (canvas) {
+        canvas.onmousemove = e => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const tooltip = document.getElementById("chartTooltip");
             
-            const showTooltip = () => {
-                const tooltip = document.getElementById("chartTooltip");
-                const chart = circle.closest(".line-chart");
-                if (!tooltip || !chart) return;
-                tooltip.textContent = `${point.day.weekday}: ${point.value} completed`;
-                tooltip.style.left = `${(point.x / 600) * chart.clientWidth}px`;
-                tooltip.style.top = `${(point.y / 200) * chart.clientHeight - 4}px`;
+            const closest = points.reduce((prev, curr) => Math.abs(curr.x - mouseX) < Math.abs(prev.x - mouseX) ? curr : prev, points[0]);
+            
+            if (closest && Math.abs(closest.x - mouseX) < 25) {
+                const chart = canvas.closest(".line-chart");
+                tooltip.textContent = `${closest.day.weekday}\nCompleted: ${closest.value}`;
+                tooltip.style.left = `${(closest.x / canvas.width) * chart.clientWidth}px`;
+                tooltip.style.top = `${(closest.y / canvas.height) * chart.clientHeight - 35}px`;
                 tooltip.style.opacity = "1";
-            };
-
-            circle.addEventListener("mouseenter", showTooltip);
-            circle.addEventListener("mouseleave", () => {
-                const tooltip = document.getElementById("chartTooltip");
-                if (tooltip) tooltip.style.opacity = "0";
-            });
-            svg.appendChild(circle);
-        });
+            } else if (tooltip) {
+                tooltip.style.opacity = "0";
+            }
+        };
+        canvas.onmouseleave = () => {
+            const tooltip = document.getElementById("chartTooltip");
+            if (tooltip) tooltip.style.opacity = "0";
+        };
     }
 }
 
@@ -1212,6 +1519,7 @@ function habitFrequencyLabel(habit) {
 function renderHabits() {
     const list = document.getElementById("habitList");
     if (!list) return;
+    
     const frequency = document.getElementById("habitFrequencyFilter").value;
     const search = document.getElementById("habitSearch").value.trim().toLowerCase();
     const sort = document.getElementById("habitSort").value;
@@ -1242,31 +1550,43 @@ function renderHabits() {
         }).join("");
 
         const colorClass = highlight ? `rule-highlight-${highlight.color}` : "";
+
+        const actionButtonsHTML = `
+            <button class="icon-button habit-edit" data-edit-habit="${habit.id}" title="Edit habit">${icons.edit}</button>
+            <button class="icon-button delete habit-delete" data-delete-habit="${habit.id}" title="Delete habit">${icons.trash}</button>
+            <button class="habit-complete-button ${todayDone ? "completed" : ""}" data-complete-habit="${habit.id}" ${!habitIsDue(habit) ? 'disabled title="Not scheduled today"' : ""}>${todayDone ? "Completed" : "Mark complete"}</button>
+        `;
+
         return `
             <article class="habit-entry ${colorClass}" data-habit-card="${habit.id}">
-                <div class="habit-entry-main">
-                    <div class="habit-entry-title-row">
-                        <div>
+                <div class="habit-content-wrapper">
+                    <div class="habit-header-row">
+                        <div class="habit-title-desc">
                             <h3 class="habit-entry-title">${escapeHTML(habit.name)}</h3>
                             <p class="habit-entry-description">${escapeHTML(habit.description || "")}</p>
                         </div>
-                        <div class="habit-entry-actions">
-                            <span class="habit-frequency-tag">${escapeHTML(habitFrequencyLabel(habit))}</span>
-                            ${badge ? `<span class="rule-badge ${badge.color}">${escapeHTML(badge.name)}</span>` : ""}
-                            <button class="icon-button habit-edit" data-edit-habit="${habit.id}" title="Edit habit">${icons.edit}</button>
-                            <button class="icon-button delete habit-delete" data-delete-habit="${habit.id}" title="Delete habit">${icons.trash}</button>
+                        <div class="habit-top-actions">
+                            ${actionButtonsHTML}
                         </div>
                     </div>
                     <div class="habit-entry-meta">
-                        <span>${habit.frequency === "weekly" ? "Weekly" : habit.frequency === "custom" ? "Custom" : "Daily"}</span>
-                        <span class="streak-chip">${streak} ${habit.frequency === "weekly" ? "week" : "day"} streak</span>
+                        <span class="habit-frequency-tag"><img class="asset-icon" src="./Assests/calendar.svg" alt="">${escapeHTML(habitFrequencyLabel(habit))}</span>
+                        <span class="streak-chip">${icons.flame} ${streak} ${habit.frequency === "weekly" ? "week" : "day"} streak</span>
+                        ${badge ? `<span class="rule-badge ${badge.color}">${escapeHTML(badge.name)}</span>` : ""}
                     </div>
-                    <div class="habit-week-label">Last 7 days</div>
-                    <div class="habit-week-grid">${week}</div>
+                    <div class="habit-week-section">
+                        <div class="habit-week-label">Last 7 days</div>
+                        <div class="habit-week-grid">${week}</div>
+                    </div>
                 </div>
-                <button class="habit-complete-button ${todayDone ? "completed" : ""}" data-complete-habit="${habit.id}" ${!habitIsDue(habit) ? 'disabled title="Not scheduled today"' : ""}>${todayDone ? "Completed" : "Mark complete"}</button>
+                <div class="habit-bottom-actions">
+                    ${actionButtonsHTML}
+                </div>
             </article>`;
-    }).join("") : `<div class="empty"><div class="empty-icon">${icons.habit_page}</div><div class="empty-text">No habits found. Add a habit to start a streak.</div></div>`;
+    }).join("") : `<div class="empty"><div class="empty-icon"><svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 54.3749C24.8633 54.3689 19.9386 52.3257 16.3064 48.6935C12.6742 45.0613 10.631 40.1366 10.625 34.9999C10.5043 32.4322 10.9374 29.8687 11.8951 27.4832C12.8527 25.0978 14.3124 22.9463 16.175 21.1749C16.925 20.4249 17.7625 19.6749 18.64 18.9024C22.0725 15.8599 25.625 12.7124 25.625 7.49986C25.625 7.16051 25.7171 6.82752 25.8915 6.53641C26.0659 6.24529 26.3161 6.00697 26.6153 5.84685C26.9145 5.68672 27.2515 5.6108 27.5905 5.62719C27.9295 5.64357 28.2576 5.75163 28.54 5.93986C28.69 6.03986 42.04 15.1899 36.4425 30.9399C37.7134 29.9981 38.758 28.7844 39.5 27.3874C40.2633 25.8726 40.6492 24.1959 40.625 22.4999C40.6248 22.1275 40.7355 21.7636 40.9429 21.4544C41.1503 21.1452 41.4451 20.9047 41.7897 20.7637C42.1343 20.6226 42.5131 20.5873 42.8778 20.6624C43.2424 20.7374 43.5766 20.9193 43.8375 21.1849C47.4099 24.8943 49.3963 29.8499 49.375 34.9999C49.369 40.1366 47.3258 45.0613 43.6936 48.6935C40.0614 52.3257 35.1367 54.3689 30 54.3749ZM28.905 11.1799C27.434 15.3947 24.7218 19.0657 21.125 21.7099C20.31 22.4324 19.5225 23.1274 18.825 23.8249C17.3167 25.253 16.1373 26.9923 15.3688 28.9221C14.6004 30.8519 14.2612 32.9258 14.375 34.9999C14.375 39.1439 16.0212 43.1182 18.9515 46.0484C21.8817 48.9787 25.856 50.6249 30 50.6249C34.144 50.6249 38.1183 48.9787 41.0485 46.0484C43.9788 43.1182 45.625 39.1439 45.625 34.9999C45.6282 32.2683 44.9484 29.5793 43.6475 27.1774C43.4257 27.8422 43.1532 28.4891 42.8325 29.1124C40.6814 32.8803 37.1328 35.6493 32.955 36.8199C32.5984 36.9091 32.2235 36.8915 31.8769 36.7693C31.5302 36.6472 31.2271 36.4259 31.0052 36.1329C30.7834 35.8398 30.6525 35.4881 30.6289 35.1213C30.6053 34.7545 30.69 34.3889 30.8725 34.0699C37.4375 22.5774 32.34 14.7199 28.905 11.1799Z" fill="#DDDDDD"/>
+</svg>
+</div><div class="empty-text">No habits found. Add a habit to start a streak.</div></div>`;
 
     list.querySelectorAll("[data-habit-day]").forEach(button => button.addEventListener("click", () => toggleHabitDate(button.dataset.habitDay, button.dataset.day)));
     list.querySelectorAll("[data-complete-habit]").forEach(button => button.addEventListener("click", () => toggleHabitDate(button.dataset.completeHabit, localDateKey())));
@@ -1302,10 +1622,12 @@ function openHabitEditor(id = null) {
     document.getElementById("habitWeeklyDayGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "weekly");
     document.getElementById("habitDaysGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "custom");
     document.getElementById("habitModal").classList.add("show");
+    document.body.classList.add("modal-open");
 }
 
 function closeHabitEditor() {
     document.getElementById("habitModal").classList.remove("show");
+    document.body.classList.remove("modal-open");
     editingHabitId = null;
     clearErrors();
 }
@@ -1345,7 +1667,10 @@ function renderConditionRows(conditions = []) {
                 <option value="gte" ${condition.operator === "gte" ? "selected" : ""}>Greater than or equal</option>
             </select>
             <span class="condition-value-wrap">${conditionValueControl(target, condition.field, condition.value)}</span>
-            <button class="remove-condition" type="button" data-remove-condition="${index}" title="Remove condition">X</button>
+            <button class="remove-condition" type="button" data-remove-condition="${index}" title="Remove condition"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 3.5H11.6273C11.0273 3.5 11.0013 3.424 10.8367 2.93067L10.7033 2.526C10.6042 2.22684 10.4132 1.96659 10.1575 1.78236C9.90182 1.59813 9.59449 1.49932 9.27933 1.5H6.72067C6.40574 1.4996 6.09871 1.59854 5.84328 1.78275C5.58785 1.96696 5.39704 2.22705 5.298 2.526L5.16467 2.93067C5 3.424 4.974 3.5 4.374 3.5H2C1.86739 3.5 1.74021 3.55268 1.64645 3.64645C1.55268 3.74022 1.5 3.86739 1.5 4C1.5 4.13261 1.55268 4.25979 1.64645 4.35356C1.74021 4.44732 1.86739 4.5 2 4.5H2.86667L3.378 12.1667C3.37155 12.4888 3.43296 12.8086 3.55824 13.1055C3.68351 13.4023 3.86986 13.6694 4.10515 13.8895C4.34044 14.1096 4.61942 14.2777 4.92394 14.3828C5.22846 14.488 5.55171 14.5279 5.87267 14.5H10.13C10.451 14.5279 10.7742 14.488 11.0787 14.3828C11.3832 14.2777 11.6622 14.1096 11.8975 13.8895C12.1328 13.6694 12.3192 13.4023 12.4444 13.1055C12.5697 12.8086 12.6311 12.4888 12.6247 12.1667L13.1333 4.5H14C14.1326 4.5 14.2598 4.44732 14.3536 4.35356C14.4473 4.25979 14.5 4.13261 14.5 4C14.5 3.86739 14.4473 3.74022 14.3536 3.64645C14.2598 3.55268 14.1326 3.5 14 3.5ZM6.24667 2.842C6.27964 2.74237 6.3432 2.65568 6.42831 2.59428C6.51341 2.53287 6.61572 2.49988 6.72067 2.5H9.27933C9.38428 2.49988 9.48659 2.53287 9.57169 2.59428C9.6568 2.65568 9.72036 2.74237 9.75333 2.842L9.88667 3.24667C9.91533 3.334 9.94533 3.41867 9.97733 3.5H6.02067C6.05267 3.418 6.08267 3.33334 6.11133 3.24667L6.24667 2.842ZM11.6253 12.0993C11.6399 12.2954 11.6104 12.4923 11.5389 12.6754C11.4674 12.8586 11.3558 13.0233 11.2122 13.1577C11.0686 13.292 10.8967 13.3924 10.7092 13.4515C10.5217 13.5106 10.3233 13.527 10.1287 13.4993H5.87133C5.67668 13.527 5.4783 13.5106 5.29079 13.4515C5.10328 13.3924 4.93141 13.292 4.78782 13.1577C4.64424 13.0233 4.53259 12.8586 4.46109 12.6754C4.38959 12.4923 4.36006 12.2954 4.37467 12.0993L3.86667 4.5H4.37133C4.45467 4.5 4.52333 4.49134 4.59867 4.486C4.62093 4.49246 4.64367 4.49714 4.66667 4.5H11.3333C11.3559 4.49707 11.3782 4.49239 11.4 4.486C11.4753 4.49134 11.544 4.5 11.6273 4.5H12.1333L11.6253 12.0993ZM9.83333 7.33334V10.6667C9.83333 10.7993 9.78065 10.9265 9.68689 11.0202C9.59312 11.114 9.46594 11.1667 9.33333 11.1667C9.20073 11.1667 9.07355 11.114 8.97978 11.0202C8.88601 10.9265 8.83333 10.7993 8.83333 10.6667V7.33334C8.83333 7.20073 8.88601 7.07355 8.97978 6.97978C9.07355 6.88601 9.20073 6.83334 9.33333 6.83334C9.46594 6.83334 9.59312 6.88601 9.68689 6.97978C9.78065 7.07355 9.83333 7.20073 9.83333 7.33334ZM7.16667 7.33334V10.6667C7.16667 10.7993 7.11399 10.9265 7.02022 11.0202C6.92645 11.114 6.79927 11.1667 6.66667 11.1667C6.53406 11.1667 6.40688 11.114 6.31311 11.0202C6.21935 10.9265 6.16667 10.7993 6.16667 10.6667V7.33334C6.16667 7.20073 6.21935 7.07355 6.31311 6.97978C6.40688 6.88601 6.53406 6.83334 6.66667 6.83334C6.79927 6.83334 6.92645 6.88601 7.02022 6.97978C7.11399 7.07355 7.16667 7.20073 7.16667 7.33334Z" fill="#FB2C36"/>
+</svg>
+</button>
         </div>`).join("");
 
     document.querySelectorAll(".condition-field").forEach(select => select.addEventListener("change", () => {
@@ -1398,7 +1723,10 @@ function renderRules() {
                 <button class="icon-button delete rule-delete" data-delete-rule="${rule.id}" title="Delete rule">${icons.trash}</button>
                 <label class="switch" title="${rule.enabled ? "Disable" : "Enable"} rule"><input type="checkbox" data-toggle-rule="${rule.id}" ${rule.enabled ? "checked" : ""}><span></span></label>
             </div>
-        </article>`).join("") : `<div class="empty"><div class="empty-icon">${icons.rules}</div><div class="empty-text">No rules found. Add a rule to automate task or habit feedback.</div></div>`;
+        </article>`).join("") : `<div class="empty"><div class="empty-icon"><svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 8.125C13.1458 8.125 11.3332 8.67483 9.79153 9.70497C8.24982 10.7351 7.04821 12.1993 6.33863 13.9123C5.62906 15.6254 5.44341 17.5104 5.80514 19.329C6.16688 21.1475 7.05976 22.818 8.37088 24.1291C9.682 25.4402 11.3525 26.3331 13.171 26.6949C14.9896 27.0566 16.8746 26.8709 18.5877 26.1614C20.3007 25.4518 21.7649 24.2502 22.795 22.7085C23.8252 21.1668 24.375 19.3542 24.375 17.5C24.3724 15.0144 23.3838 12.6314 21.6262 10.8738C19.8686 9.11622 17.4856 8.12765 15 8.125ZM15 23.125C13.8875 23.125 12.7999 22.7951 11.8749 22.177C10.9499 21.5589 10.2289 20.6804 9.80318 19.6526C9.37744 18.6248 9.26605 17.4938 9.48309 16.4026C9.70013 15.3115 10.2359 14.3092 11.0225 13.5225C11.8092 12.7359 12.8115 12.2001 13.9026 11.9831C14.9938 11.766 16.1248 11.8774 17.1526 12.3032C18.1804 12.7289 19.0589 13.4499 19.677 14.3749C20.2951 15.2999 20.625 16.3875 20.625 17.5C20.6237 18.9914 20.0306 20.4214 18.976 21.476C17.9214 22.5306 16.4914 23.1237 15 23.125ZM45 33.125C43.1458 33.125 41.3332 33.6748 39.7915 34.705C38.2498 35.7351 37.0482 37.1993 36.3386 38.9123C35.6291 40.6254 35.4434 42.5104 35.8051 44.329C36.1669 46.1475 37.0598 47.818 38.3709 49.1291C39.682 50.4403 41.3525 51.3331 43.171 51.6949C44.9896 52.0566 46.8746 51.8709 48.5877 51.1614C50.3007 50.4518 51.7649 49.2502 52.795 47.7085C53.8252 46.1668 54.375 44.3542 54.375 42.5C54.3724 40.0144 53.3838 37.6314 51.6262 35.8738C49.8686 34.1162 47.4856 33.1277 45 33.125ZM45 48.125C43.8875 48.125 42.7999 47.7951 41.8749 47.177C40.9499 46.5589 40.2289 45.6804 39.8032 44.6526C39.3774 43.6248 39.266 42.4938 39.4831 41.4026C39.7001 40.3115 40.2359 39.3092 41.0225 38.5225C41.8092 37.7359 42.8115 37.2001 43.9026 36.9831C44.9938 36.766 46.1248 36.8774 47.1526 37.3032C48.1804 37.7289 49.0589 38.4499 49.677 39.3749C50.2951 40.2999 50.625 41.3875 50.625 42.5C50.6237 43.9914 50.0306 45.4214 48.976 46.476C47.9214 47.5306 46.4914 48.1237 45 48.125ZM37.5 19.375H52.5C52.9973 19.375 53.4742 19.1775 53.8258 18.8258C54.1775 18.4742 54.375 17.9973 54.375 17.5C54.375 17.0027 54.1775 16.5258 53.8258 16.1742C53.4742 15.8225 52.9973 15.625 52.5 15.625H37.5C37.0027 15.625 36.5258 15.8225 36.1742 16.1742C35.8225 16.5258 35.625 17.0027 35.625 17.5C35.625 17.9973 35.8225 18.4742 36.1742 18.8258C36.5258 19.1775 37.0027 19.375 37.5 19.375ZM22.5 40.625H7.5C7.00272 40.625 6.52581 40.8225 6.17418 41.1742C5.82255 41.5258 5.625 42.0027 5.625 42.5C5.625 42.9973 5.82255 43.4742 6.17418 43.8258C6.52581 44.1775 7.00272 44.375 7.5 44.375H22.5C22.9973 44.375 23.4742 44.1775 23.8258 43.8258C24.1775 43.4742 24.375 42.9973 24.375 42.5C24.375 42.0027 24.1775 41.5258 23.8258 41.1742C23.4742 40.8225 22.9973 40.625 22.5 40.625Z" fill="#DDDDDD"/>
+</svg>
+</div><div class="empty-text">No rules found. Add a rule to automate task or habit feedback.</div></div>`;
 
     list.querySelectorAll("[data-edit-rule]").forEach(button => button.addEventListener("click", () => openRuleEditor(button.dataset.editRule)));
     list.querySelectorAll("[data-delete-rule]").forEach(button => button.addEventListener("click", () => openGenericDeleteModal('rule', button.dataset.deleteRule)));
@@ -1427,10 +1755,12 @@ function openRuleEditor(id = null) {
     document.getElementById("ruleColor").value = rule?.color || "red";
     renderConditionRows(rule?.conditions || []);
     document.getElementById("ruleModal").classList.add("show");
+    document.body.classList.add("modal-open");
 }
 
 function closeRuleEditor() {
     document.getElementById("ruleModal").classList.remove("show");
+    document.body.classList.remove("modal-open");
     editingRuleId = null;
     clearErrors();
 }
@@ -1439,41 +1769,55 @@ function closeRuleEditor() {
    TOAST & UTILITIES
 ========================================= */
 function showToast(message, error = false) {
+    let container = document.getElementById("toastContainer");
+    
+    // Fallback: If container is somehow missing, create it dynamically
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+
     const toast = document.createElement("div");
     toast.className = "toast" + (error ? " error" : "");
+    
+    // Safely check icon types
+    const iconHTML = error 
+        ? (icons.alert || `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 18c-.77 1.333.192 3 1.732 3z"/></svg>`)
+        : `<img class="asset-icon" src="./Assests/tick.svg" alt="" aria-hidden="true">`;
+
+    const closeSVG = icons.close || `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+
     toast.innerHTML = `
-        <div class="toast-icon">${error ? icons.alert : icons.check}</div>
-        <div class="toast-content">${escapeHTML(message)}</div>
-        <button class="toast-close">X</button>`;
+        <div class="toast-icon-side">
+            ${iconHTML}
+        </div>
+        <div class="toast-content">${typeof escapeHTML === 'function' ? escapeHTML(message) : message}</div>
+        <button class="toast-close" aria-label="Close toast">${closeSVG}</button>`;
 
-    toastContainer.appendChild(toast);
-    toast.querySelector(".toast-close").addEventListener("click", () => toast.remove());
-    setTimeout(() => toast.remove(), 4000);
+    container.appendChild(toast);
+
+    toast.querySelector(".toast-close").addEventListener("click", () => {
+        toast.classList.add("hide");
+        setTimeout(() => toast.remove(), 200);
+    });
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.add("hide");
+            setTimeout(() => toast.remove(), 200);
+        }
+    }, 4000);
 }
-
-function escapeHTML(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
 /* =========================================
-   INITIALIZATION & FORM VALIDATION HANDLERS
+   INITIALIZATION & HANDLERS
 ========================================= */
 document.getElementById("habitSortIcon").innerHTML = icons.sort;
 document.getElementById("ruleSortIcon").innerHTML = icons.sort;
 document.getElementById("habitSearchIcon").innerHTML = icons.search;
 document.getElementById("habitPlusIcon").innerHTML = icons.plus;
 document.getElementById("rulePlusIcon").innerHTML = icons.plus;
-document.getElementById("addConditionIcon").innerHTML = icons.addCondition;
-
-document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => {
-    if (button.dataset.page === "habits") renderHabits();
-    if (button.dataset.page === "rules") renderRules();
-}));
 
 document.getElementById("habitFrequencyFilter").addEventListener("change", renderHabits);
 document.getElementById("habitSort").addEventListener("change", renderHabits);
@@ -1488,7 +1832,6 @@ document.getElementById("habitModal").addEventListener("click", event => {
     if (event.target === document.getElementById("habitModal")) closeHabitEditor();
 });
 
-// HABIT FORM SUBMISSION & RED BORDER VALIDATION
 document.getElementById("habitForm").addEventListener("submit", event => {
     event.preventDefault();
     clearErrors();
@@ -1548,7 +1891,6 @@ document.getElementById("addConditionButton").addEventListener("click", () => {
     renderConditionRows(current);
 });
 
-// RULE FORM SUBMISSION & RED BORDER VALIDATION
 document.getElementById("ruleForm").addEventListener("submit", event => {
     event.preventDefault();
     clearErrors();
@@ -1601,6 +1943,7 @@ document.addEventListener("keydown", event => {
         closeRuleEditor();
         closeTaskModal();
         closeDeleteModal();
+        closeEditSubtaskModal();
     }
 });
 
