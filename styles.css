@@ -76,6 +76,9 @@ body.dark .calendar {
     background-color:#262626;
     border-radius: 7px;
 }
+body.dark .taskup{
+    filter:brightness(0)invert(1);
+}
 
 
 
@@ -794,7 +797,7 @@ h2 {
 }
 
 .task-card.drag-over {
-    border-color: var(--green);
+    border-top:6px solid var(--green);
     box-shadow: 0 0 0 1px var(--green);
 }
 
@@ -1581,7 +1584,7 @@ body.dark .habit-day.today:not(.done):not(.missed) {
 .habit-complete-button:disabled { opacity: .45; cursor: default; border: 1px solid var(--muted);color:var(--muted)
  }
 
-.habit-frequency-tag, .streak-chip, .rule-badge {
+.habit-frequency-tag, .streak-chip {
     padding: 4px 12px;
     border-radius: 20px;
     border:1px solid var(--muted);
@@ -1591,11 +1594,20 @@ body.dark .habit-day.today:not(.done):not(.missed) {
     align-items: center;
     gap: 6px;
 }
-.streak-chip ,.rule-badge{ background: var(--red-light); color: rgb(174, 55, 55);border: 1px solid rgb(174, 55, 55);border-radius:20px; }
+.streak-chip { background: var(--red-light); color: rgb(174, 55, 55);border: 1px solid rgb(174, 55, 55);border-radius:20px; }
 /* =========================================================
    RULES & AUTOMATION BUILDER
 ========================================================= */
-
+.rule-badge{
+     padding: 4px 12px;
+    border-radius: 20px;
+    border:1px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 .rules-list {
     display: flex;
     flex-direction: column;

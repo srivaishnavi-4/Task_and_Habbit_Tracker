@@ -10,12 +10,99 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@200..800&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-    /* Robust internal scrolling overrides */
-    body.modal-open { overflow: hidden; }
-    .overlay { overflow-y: auto; }
-    .modal { max-height: 85vh; overflow-y: auto; }
-    #ruleConditions { max-height: 200px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; }
-    .subtask-list { max-height: 150px; overflow-y: auto; padding-right: 4px; }
+    /* Strict No Page Scroll & Internal Container Scrolling */
+    html, body {
+        height: 100vh;
+        overflow: hidden;
+        margin: 0;
+    }
+    .app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .page {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .page.active {
+        display: flex;
+    }
+    /* Dashboard scrollable on small screens */
+    #dashboard {
+        overflow-y: auto;
+        padding-bottom: 30px;
+    }
+    .task-list, .habit-list, .rules-list {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(100vh - 240px);
+        padding-bottom: 40px;
+    }
+    .modal {
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    #ruleConditions {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 4px;
+        margin-bottom: 12px;
+    }
+    .subtask-list {
+        max-height: 140px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    /* Toast Smooth Curves & Sizing */
+    .toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+    .toast {
+        pointer-events: auto;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        max-width: 380px;
+        padding: 14px 18px;
+    }
+    /* Subtask Checkbox Green Fill & White Tick */
+    .subtask input[type="checkbox"] {
+        accent-color: #0fc68c;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+    .subtask input[type="checkbox"]:checked {
+        background-color: #0fc68c;
+    }
+    /* Slower Toggle Switch Transition */
+    .switch span, .switch span::before {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Inline subtask edit input */
+    .subtask-inline-edit {
+        flex: 1;
+        padding: 4px 8px;
+        border: 1px solid var(--border, #ccc);
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+        background: var(--bg, #fff);
+        color: var(--text, #000);
+    }
+    
 </style>
 </head>
 
@@ -124,8 +211,8 @@
                 <div class="chart-title">Habit Completion Trend</div>
                 <div class="chart-subtitle">Track your daily habit completion over the past week.</div>
 
-                <div class="line-chart" style="width: 100%; height: 300px; position: relative; margin-top: 20px;">
-                    <canvas id="habitCanvas" width="640" height="260" style="width: 100%; height: 100%; display: block;"></canvas>
+                <div class="line-chart" style="width: 100%; height: 260px; position: relative; margin-top: 10px;">
+                    <canvas id="habitCanvas" width="640" height="240" style="width: 100%; height: 100%; display: block;"></canvas>
                     <div class="chart-tooltip" id="chartTooltip"></div>
                     <div class="chart-empty-state" id="chartEmptyState" style="display:none; position:absolute; inset:0; place-items:center; color:var(--muted);">No activity yet</div>
                 </div>
@@ -168,7 +255,7 @@
             </div>
         </section>
 
-        <section>
+        <section style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
             <div class="tasks-heading">
                 <h2>Tasks</h2>
                 <div class="task-actions">
@@ -469,42 +556,10 @@ Filters:</span>
     </div>
 </div>
 
-<!-- EDIT SUBTASK MODAL -->
-<div class="overlay" id="editSubtaskModal">
-    <div class="modal" style="max-width: 400px;">
-        <div class="modal-header">
-            <div>
-                <div class="modal-title">Edit subtask</div>
-                <div class="modal-subtitle">Update your subtask title.</div>
-            </div>
-            <button class="close" id="closeEditSubtask">X</button>
-        </div>
-        <form id="editSubtaskForm">
-            <div class="floating-group">
-                <input class="floating-input" id="editSubtaskInput" placeholder=" " required>
-                <label class="floating-label" for="editSubtaskInput">Subtask title <span class="required">*</span></label>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="cancel" id="cancelEditSubtask">Cancel</button>
-                <button type="submit" class="submit">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-    function escapeHTML(value) {
-    if (!value) return "";
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
 /* =========================================
    ICONS
 ========================================= */
@@ -568,7 +623,6 @@ let editingId = null;
 let deletingTarget = null;
 let editingHabitId = null;
 let editingRuleId = null;
-let editingSubtaskTarget = null;
 
 function saveTasks() { localStorage.setItem("taskHabitTasks", JSON.stringify(tasks)); }
 function saveHabits() { localStorage.setItem("taskHabitHabits", JSON.stringify(habits)); }
@@ -666,7 +720,7 @@ function ruleMatches(rule, item) {
 }
 
 function matchingRule(section, item, action) {
-    return rules.find(rule => rule.enabled && rule.section === section && rule.action === action && ruleMatches(rule, item));
+    return rules.slice().reverse().find(rule => rule.enabled && rule.section === section && rule.action === action && ruleMatches(rule, item));
 }
 
 /* =========================================
@@ -745,6 +799,7 @@ function renderTasks() {
 
 function createTaskHTML(task, index) {
     const highlightRule = matchingRule("task", task, "highlight");
+    const badgeRule = matchingRule("task", task, "badge");
     const priorityText = task.priority ? (task.priority.charAt(0).toUpperCase() + task.priority.slice(1)) : "None";
     const date = task.dueDate ? new Date(task.dueDate).toLocaleDateString("en-GB") : "No Date";
     const moveUpDisabled = index === 0 ? "disabled" : "";
@@ -770,11 +825,12 @@ function createTaskHTML(task, index) {
 </svg>
   ${priorityText}</span>
                         <span class="calendar"><img class="asset-icon" src="./Assests/calendar.svg" alt="">${date}</span>
+                        ${badgeRule ? `<span class="rule-badge ${badgeRule.color}">${escapeHTML(badgeRule.name)}</span>` : ""}
                     </div>
                 </div>
                 <div class="task-controls">
-                    <button class="move-task move-task-up" title="Move up" aria-label="Move task up" ${moveUpDisabled}>${icons.up}</button>
-                    <button class="move-task move-task-down" title="Move down" aria-label="Move task down" ${moveDownDisabled}>${icons.down}</button>
+                    <button class="move-task move-task-up taskup" title="Move up" aria-label="Move task up" ${moveUpDisabled}>${icons.up}</button>
+                    <button class="move-task move-task-down taskup" title="Move down" aria-label="Move task down" ${moveDownDisabled}>${icons.down}</button>
                     <button class="icon-button edit-task" title="Edit">${icons.edit}</button>
                     <button class="icon-button delete delete-task" title="Delete">${icons.trash}</button>
                 </div>
@@ -800,31 +856,29 @@ function createTaskHTML(task, index) {
                     <button class="subtask-add" data-add-subtask="${task.id}">${icons.plus}</button>
                 </div>
                 <div class="subtask-list">
-                    ${(task.subtasks || []).map((sub, subIndex) => `
+                    ${(task.subtasks || []).map((sub, subIndex) => {
+                        const subUpDisabled = subIndex === 0 ? "disabled" : "";
+                        const subDownDisabled = subIndex === (task.subtasks.length - 1) ? "disabled" : "";
+                        return `
                         <div class="subtask-row" data-subtask-index="${subIndex}">
                             <label class="subtask">
                                 <input type="checkbox" ${sub.completed ? "checked" : ""} data-toggle-subtask="${subIndex}">
                                 <span class="subtask-text">${escapeHTML(sub.title)}</span>
                             </label>
                             <div class="subtask-actions">
+                                <button class="move-task move-subtask-up taskup" data-sub-up="${subIndex}" title="Move up" ${subUpDisabled}>${icons.up}</button>
+                                <button class="move-task move-subtask-down taskup" data-sub-down="${subIndex}" title="Move down" ${subDownDisabled}>${icons.down}</button>
                                 <button class="icon-button subtask-edit" data-edit-subtask="${subIndex}" title="Edit subtask">${icons.edit}</button>
                                 <button class="icon-button delete subtask-delete" data-delete-subtask="${subIndex}" title="Delete subtask">${icons.trash}</button>
                             </div>
-                        </div>
-                    `).join("")}
+                        </div>`;
+                    }).join("")}
                 </div>
             </div>
         </article>`;
 }
 
 function attachTaskEvents() {
-    document.querySelectorAll(".expand-task").forEach(button => {
-        button.addEventListener("click", e => {
-            e.stopPropagation();
-            button.closest(".task-card").classList.toggle("expanded");
-        });
-    });
-
     document.querySelectorAll(".edit-task").forEach(button => {
         button.addEventListener("click", e => {
             e.stopPropagation();
@@ -842,11 +896,23 @@ function attachTaskEvents() {
     });
 
     document.querySelectorAll(".move-task").forEach(button => {
+        if (button.classList.contains("move-subtask-up") || button.classList.contains("move-subtask-down")) return;
         button.addEventListener("click", e => {
             e.stopPropagation();
             const taskId = Number(button.closest(".task-card").dataset.id);
             const direction = button.classList.contains("move-task-up") ? "up" : "down";
             moveTask(taskId, direction);
+        });
+    });
+
+    document.querySelectorAll(".move-subtask-up, .move-subtask-down").forEach(button => {
+        button.addEventListener("click", e => {
+            e.stopPropagation();
+            const card = button.closest(".task-card");
+            const taskId = Number(card.dataset.id);
+            const subIndex = Number(button.dataset.subUp ?? button.dataset.subDown);
+            const direction = button.classList.contains("move-subtask-up") ? "up" : "down";
+            moveSubtask(taskId, subIndex, direction);
         });
     });
 
@@ -905,7 +971,43 @@ function attachTaskEvents() {
             const card = button.closest(".task-card");
             const id = Number(card.dataset.id);
             const index = Number(button.dataset.editSubtask);
-            openEditSubtaskModal(id, index);
+            const task = tasks.find(t => t.id === id);
+            if (!task || !task.subtasks[index]) return;
+
+            const row = button.closest(".subtask-row");
+            const textSpan = row.querySelector(".subtask-text");
+            const currentTitle = task.subtasks[index].title;
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "subtask-inline-edit";
+            input.value = currentTitle;
+            textSpan.replaceWith(input);
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+
+            const saveInline = () => {
+                const newTitle = input.value.trim();
+                if (newTitle) {
+                    task.subtasks[index].title = newTitle;
+                    saveTasks();
+                }
+                renderTasks();
+                const activeCard = document.querySelector(`.task-card[data-id="${id}"]`);
+                if (activeCard) activeCard.classList.add("expanded");
+            };
+
+            input.addEventListener("blur", saveInline);
+            input.addEventListener("keydown", ev => {
+                if (ev.key === "Enter") {
+                    ev.preventDefault();
+                    saveInline();
+                } else if (ev.key === "Escape") {
+                    renderTasks();
+                    const activeCard = document.querySelector(`.task-card[data-id="${id}"]`);
+                    if (activeCard) activeCard.classList.add("expanded");
+                }
+            });
         });
     });
 
@@ -950,6 +1052,20 @@ function moveTask(taskId, direction) {
     saveTasks();
     renderTasks();
     updateDashboard();
+}
+
+function moveSubtask(taskId, subIndex, direction) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.subtasks) return;
+    const nextIndex = direction === "up" ? subIndex - 1 : subIndex + 1;
+    if (nextIndex < 0 || nextIndex >= task.subtasks.length) return;
+
+    const [movedSub] = task.subtasks.splice(subIndex, 1);
+    task.subtasks.splice(nextIndex, 0, movedSub);
+    saveTasks();
+    renderTasks();
+    const activeCard = document.querySelector(`.task-card[data-id="${taskId}"]`);
+    if (activeCard) activeCard.classList.add("expanded");
 }
 
 function enableDragDrop() {
@@ -1020,7 +1136,6 @@ function openAddModal() {
     taskForm.reset();
     clearErrors();
     taskModal.classList.add("show");
-    document.body.classList.add("modal-open");
     setTimeout(() => taskTitle.focus(), 50);
 }
 
@@ -1037,16 +1152,13 @@ function openEditModal(id) {
     taskStatus.value = task.status || "todo";
     clearErrors();
     taskModal.classList.add("show");
-    document.body.classList.add("modal-open");
 }
 
 closeModal.addEventListener("click", closeTaskModal);
 cancelModal.addEventListener("click", closeTaskModal);
-taskModal.addEventListener("click", e => { if (e.target === taskModal) closeTaskModal(); });
 
 function closeTaskModal() {
     taskModal.classList.remove("show");
-    document.body.classList.remove("modal-open");
     editingId = null;
 }
 
@@ -1104,54 +1216,6 @@ function clearErrors() {
 }
 
 /* =========================================
-   EDIT SUBTASK MODAL HANDLING
-========================================= */
-function openEditSubtaskModal(taskId, subIndex) {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task || !task.subtasks[subIndex]) return;
-
-    editingSubtaskTarget = { taskId, subIndex };
-    const input = document.getElementById("editSubtaskInput");
-    input.value = task.subtasks[subIndex].title;
-
-    document.getElementById("editSubtaskModal").classList.add("show");
-    document.body.classList.add("modal-open");
-    setTimeout(() => input.focus(), 50);
-}
-
-function closeEditSubtaskModal() {
-    document.getElementById("editSubtaskModal").classList.remove("show");
-    document.body.classList.remove("modal-open");
-    editingSubtaskTarget = null;
-}
-
-document.getElementById("closeEditSubtask").addEventListener("click", closeEditSubtaskModal);
-document.getElementById("cancelEditSubtask").addEventListener("click", closeEditSubtaskModal);
-document.getElementById("editSubtaskModal").addEventListener("click", e => {
-    if (e.target === document.getElementById("editSubtaskModal")) closeEditSubtaskModal();
-});
-
-document.getElementById("editSubtaskForm").addEventListener("submit", e => {
-    e.preventDefault();
-    if (!editingSubtaskTarget) return;
-
-    const { taskId, subIndex } = editingSubtaskTarget;
-    const task = tasks.find(t => t.id === taskId);
-    const newTitle = document.getElementById("editSubtaskInput").value.trim();
-
-    if (task && task.subtasks[subIndex] && newTitle) {
-        task.subtasks[subIndex].title = newTitle;
-        saveTasks();
-        renderTasks();
-        const activeCard = document.querySelector(`.task-card[data-id="${taskId}"]`);
-        if (activeCard) activeCard.classList.add("expanded");
-        showToast("Subtask updated successfully!");
-    }
-
-    closeEditSubtaskModal();
-});
-
-/* =========================================
    GENERIC DELETE MODAL
 ========================================= */
 function openGenericDeleteModal(type, id) {
@@ -1170,12 +1234,10 @@ function openGenericDeleteModal(type, id) {
 
     deleteText.textContent = `Are you sure you want to delete ${name}?`;
     deleteModal.classList.add("show");
-    document.body.classList.add("modal-open");
 }
 
 function closeDeleteModal() {
     deleteModal.classList.remove("show");
-    document.body.classList.remove("modal-open");
     deletingTarget = null;
 }
 
@@ -1340,7 +1402,7 @@ function drawHabitChart(trendData, daysArray, maxValue) {
     const paddingLeft = 65;
     const paddingRight = 40;
     const paddingTop = 20;
-    const paddingBottom = 45;
+    const paddingBottom = 40;
     
     const chartWidth = canvas.width - paddingLeft - paddingRight;
     const chartHeight = canvas.height - paddingTop - paddingBottom;
@@ -1393,7 +1455,7 @@ function drawHabitChart(trendData, daysArray, maxValue) {
         ctx.font = "12px Quicksand, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText(day.weekday, x, paddingTop + chartHeight + 12);
+        ctx.fillText(day.weekday, x, paddingTop + chartHeight + 10);
     });
 
     ctx.strokeStyle = axisColor;
@@ -1622,12 +1684,10 @@ function openHabitEditor(id = null) {
     document.getElementById("habitWeeklyDayGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "weekly");
     document.getElementById("habitDaysGroup").classList.toggle("hidden", document.getElementById("habitFrequency").value !== "custom");
     document.getElementById("habitModal").classList.add("show");
-    document.body.classList.add("modal-open");
 }
 
 function closeHabitEditor() {
     document.getElementById("habitModal").classList.remove("show");
-    document.body.classList.remove("modal-open");
     editingHabitId = null;
     clearErrors();
 }
@@ -1694,12 +1754,6 @@ function readRuleConditions() {
     }));
 }
 
-function ruleSummary(rule) {
-    const names = Object.fromEntries(conditionFieldOptions(rule.section).map(([key, label]) => [key, label]));
-    const parts = (rule.conditions || []).map(condition => `${names[condition.field] || condition.field} ${condition.operator} ${condition.value}`);
-    return `${rule.section === "task" ? "Task" : "Habit"} · ${parts.join(` ${rule.logic || "AND"} `)} · ${rule.action === "badge" ? "Show badge" : "Highlight"} ${rule.color}`;
-}
-
 function renderRules() {
     const list = document.getElementById("rulesList");
     if (!list) return;
@@ -1715,8 +1769,7 @@ function renderRules() {
         <article class="rule-row">
             <div class="rule-row-content">
                 <div class="rule-name-line"><h3>${escapeHTML(rule.name)}</h3><span class="rule-section-tag ${rule.section}">${rule.section === "task" ? "Task" : "Habit"}</span></div>
-                <p>${escapeHTML(rule.description || ruleSummary(rule))}</p>
-                <small>${escapeHTML(ruleSummary(rule))}</small>
+                <p>${escapeHTML(rule.description || "")}</p>
             </div>
             <div class="rule-row-actions">
                 <button class="icon-button rule-edit" data-edit-rule="${rule.id}" title="Edit rule">${icons.edit}</button>
@@ -1755,12 +1808,10 @@ function openRuleEditor(id = null) {
     document.getElementById("ruleColor").value = rule?.color || "red";
     renderConditionRows(rule?.conditions || []);
     document.getElementById("ruleModal").classList.add("show");
-    document.body.classList.add("modal-open");
 }
 
 function closeRuleEditor() {
     document.getElementById("ruleModal").classList.remove("show");
-    document.body.classList.remove("modal-open");
     editingRuleId = null;
     clearErrors();
 }
@@ -1770,8 +1821,6 @@ function closeRuleEditor() {
 ========================================= */
 function showToast(message, error = false) {
     let container = document.getElementById("toastContainer");
-    
-    // Fallback: If container is somehow missing, create it dynamically
     if (!container) {
         container = document.createElement("div");
         container.id = "toastContainer";
@@ -1781,20 +1830,12 @@ function showToast(message, error = false) {
 
     const toast = document.createElement("div");
     toast.className = "toast" + (error ? " error" : "");
-    
-    // Safely check icon types
-    const iconHTML = error 
-        ? (icons.alert || `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 18c-.77 1.333.192 3 1.732 3z"/></svg>`)
-        : `<img class="asset-icon" src="./Assests/tick.svg" alt="" aria-hidden="true">`;
-
-    const closeSVG = icons.close || `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
-
     toast.innerHTML = `
         <div class="toast-icon-side">
-            ${iconHTML}
+            ${error ? icons.alert : assetIcon("tick")}
         </div>
-        <div class="toast-content">${typeof escapeHTML === 'function' ? escapeHTML(message) : message}</div>
-        <button class="toast-close" aria-label="Close toast">${closeSVG}</button>`;
+        <div class="toast-content">${escapeHTML(message)}</div>
+        <button class="toast-close" aria-label="Close toast">${icons.close}</button>`;
 
     container.appendChild(toast);
 
@@ -1810,6 +1851,17 @@ function showToast(message, error = false) {
         }
     }, 4000);
 }
+
+function escapeHTML(value) {
+    if (!value) return "";
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
 /* =========================================
    INITIALIZATION & HANDLERS
 ========================================= */
@@ -1828,9 +1880,6 @@ document.getElementById("habitFrequency").addEventListener("change", event => {
     document.getElementById("habitDaysGroup").classList.toggle("hidden", event.target.value !== "custom");
 });
 document.querySelectorAll("[data-close-habit]").forEach(button => button.addEventListener("click", closeHabitEditor));
-document.getElementById("habitModal").addEventListener("click", event => {
-    if (event.target === document.getElementById("habitModal")) closeHabitEditor();
-});
 
 document.getElementById("habitForm").addEventListener("submit", event => {
     event.preventDefault();
@@ -1880,9 +1929,6 @@ document.getElementById("ruleSort").addEventListener("change", renderRules);
 document.getElementById("ruleSearch").addEventListener("input", renderRules);
 document.getElementById("addRuleButton").addEventListener("click", () => openRuleEditor());
 document.querySelectorAll("[data-close-rule]").forEach(button => button.addEventListener("click", closeRuleEditor));
-document.getElementById("ruleModal").addEventListener("click", event => {
-    if (event.target === document.getElementById("ruleModal")) closeRuleEditor();
-});
 document.getElementById("ruleTarget").addEventListener("change", () => renderConditionRows());
 document.getElementById("addConditionButton").addEventListener("click", () => {
     const current = readRuleConditions();
@@ -1943,7 +1989,6 @@ document.addEventListener("keydown", event => {
         closeRuleEditor();
         closeTaskModal();
         closeDeleteModal();
-        closeEditSubtaskModal();
     }
 });
 
